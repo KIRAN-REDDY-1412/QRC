@@ -54,16 +54,17 @@ export const LandingPage: React.FC = () => {
     if (!email) return;
 
     if (authMode === 'register') {
-      await register(email, name || 'Restaurant Owner');
+      const registeredUser = await register(email, name || 'Restaurant Owner');
       const restName = name.trim() || 'My Restaurant';
       const cleanSlug = restName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `restaurant-${Date.now()}`;
       addRestaurant({
+        owner_id: registeredUser.id,
         name: restName,
         slug: cleanSlug,
         tagline: 'Authentic Dining & Crafted Menus',
         description: 'Welcome to our digital menu. Explore freshly prepared culinary specials and order right from your table.',
         phone: '+91 98765 43210',
-        email: email.trim(),
+        email: registeredUser.email,
         address: 'Main Street, City Center',
         city: 'Mumbai',
         state: 'Maharashtra',

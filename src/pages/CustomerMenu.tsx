@@ -22,7 +22,6 @@ import { MenuCartDrawer } from '@/components/menu/MenuCartDrawer';
 import { UpiPaymentModal } from '@/components/menu/UpiPaymentModal';
 import { GoogleReviewBooster } from '@/components/menu/GoogleReviewBooster';
 import { OpeningExperienceOverlay } from '@/components/menu/OpeningExperienceOverlay';
-import { TableBookingModal } from '@/components/menu/TableBookingModal';
 import { 
   Search, 
   Globe, 
@@ -40,7 +39,7 @@ import {
   Sparkles,
   Crown,
   X,
-  Calendar
+  MessageSquare
 } from 'lucide-react';
 
 export const CustomerMenu: React.FC = () => {
@@ -76,12 +75,11 @@ export const CustomerMenu: React.FC = () => {
   // Premium Plus Feature Gating
   const [isPremiumPlus, setIsPremiumPlus] = useState<boolean>(false);
 
-  // Cart & Ordering States (Premium Plus)
+  // Cart & Ordering States (WhatsApp Food Ordering)
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [isUpiModalOpen, setIsUpiModalOpen] = useState<boolean>(false);
   const [isDishPickerOpen, setIsDishPickerOpen] = useState<boolean>(false);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
   const [waiterToast, setWaiterToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -336,26 +334,27 @@ export const CustomerMenu: React.FC = () => {
 
       {/* Floating Action Controls Deck */}
       <div className="fixed bottom-4 inset-x-4 max-w-md mx-auto z-40 space-y-2">
-        {/* FEATURE 1: Floating Cart Bar (When Items in Cart) */}
-        {isPremiumPlus && cartItems.length > 0 && (
+        {/* Floating WhatsApp Cart Bar (When Items in Cart) */}
+        {cartItems.length > 0 && (
           <div
             onClick={() => setIsCartOpen(true)}
-            className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white shadow-2xl flex items-center justify-between cursor-pointer transition transform active:scale-95 animate-in slide-in-from-bottom-2"
+            className="p-3.5 rounded-2xl bg-gradient-to-r from-[#25D366] via-[#1fb855] to-[#128C7E] hover:opacity-95 text-white shadow-2xl shadow-emerald-500/35 flex items-center justify-between cursor-pointer transition transform active:scale-95 animate-in slide-in-from-bottom-2 border border-emerald-400/40"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-black/20 flex items-center justify-center font-black text-xs">
+              <div className="w-9 h-9 rounded-xl bg-black/25 flex items-center justify-center font-black text-xs">
                 {totalCartCount}
               </div>
               <div>
-                <span className="font-extrabold text-xs block leading-tight">View Table Order</span>
-                <span className="text-[10px] text-emerald-100 font-medium">Tap to review & send to kitchen</span>
+                <span className="font-extrabold text-xs block leading-tight">View Your Order</span>
+                <span className="text-[10px] text-emerald-100 font-medium">Tap to review & order on WhatsApp</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="font-black text-sm">₹{cartTotalAmount}</span>
-              <span className="text-[10px] bg-black/20 px-2 py-1 rounded-lg font-bold">
-                Open Cart &rarr;
+              <span className="text-[10px] bg-black/25 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1">
+                <MessageSquare className="w-3 h-3 fill-white" />
+                <span>Order via WhatsApp &rarr;</span>
               </span>
             </div>
           </div>
@@ -393,49 +392,41 @@ export const CustomerMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* Quick Actions (Book Table / Order / Waiter / UPI / Search) */}
+          {/* Quick Actions (WhatsApp Order / Waiter / UPI / Search) */}
           <div className="flex items-center gap-1.5">
-            {/* Book Table Button */}
+            {/* Direct WhatsApp Food Ordering Button */}
             <button
-              onClick={() => setIsBookingModalOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition flex items-center gap-1 shadow-md shadow-amber-500/20 whitespace-nowrap"
-              title="Book a Table at this restaurant"
+              onClick={() => {
+                if (cartItems.length > 0) {
+                  setIsCartOpen(true);
+                } else {
+                  setIsDishPickerOpen(true);
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba5a] hover:to-[#0f7a6c] text-white font-extrabold text-xs transition flex items-center gap-1.5 shadow-md shadow-emerald-600/30 whitespace-nowrap active:scale-95"
+              title="Order food through WhatsApp"
             >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Book Table</span>
+              <MessageSquare className="w-3.5 h-3.5 fill-white" />
+              <span>{cartItems.length > 0 ? `Cart (${totalCartCount})` : 'Order Food'}</span>
             </button>
 
-            {isPremiumPlus && (
-              <>
-                {/* Add Dish Quick Button */}
-                <button
-                  onClick={() => setIsDishPickerOpen(true)}
-                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1 shadow-sm"
-                  title="Add Dish to Order"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Order</span>
-                </button>
+            {/* Call Waiter */}
+            <button
+              onClick={() => handleCallWaiter('Assistance')}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              title="Call Waiter"
+            >
+              <Bell className="w-4 h-4" />
+            </button>
 
-                {/* Call Waiter */}
-                <button
-                  onClick={() => handleCallWaiter('Assistance')}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
-                  title="Call Waiter"
-                >
-                  <Bell className="w-4 h-4" />
-                </button>
-
-                {/* Pay Bill via UPI */}
-                <button
-                  onClick={() => setIsUpiModalOpen(true)}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition"
-                  title="Request Bill & Pay via UPI"
-                >
-                  <CreditCard className="w-4 h-4" />
-                </button>
-              </>
-            )}
+            {/* Pay Bill via UPI */}
+            <button
+              onClick={() => setIsUpiModalOpen(true)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition"
+              title="Request Bill & Pay via UPI"
+            >
+              <CreditCard className="w-4 h-4" />
+            </button>
 
             {/* Search Trigger */}
             <button
@@ -579,12 +570,6 @@ export const CustomerMenu: React.FC = () => {
         onOpenUpiPayment={() => setIsUpiModalOpen(true)}
       />
 
-      {/* MODAL: TABLE BOOKING & RESERVATION */}
-      <TableBookingModal
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        restaurant={restaurant}
-      />
 
       {/* MODAL: UPI INSTANT PAYMENT (FEATURE 3) */}
       <UpiPaymentModal

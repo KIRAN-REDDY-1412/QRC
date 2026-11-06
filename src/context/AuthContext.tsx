@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, role?: UserRole) => Promise<void>;
-  register: (email: string, fullName: string, role?: UserRole) => Promise<void>;
+  register: (email: string, fullName: string, role?: UserRole) => Promise<UserProfile>;
   logout: () => Promise<void>;
   switchRole: (newRole: UserRole) => void;
   changePassword: (newPassword: string) => Promise<boolean>;
@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, fullName: string, role: UserRole = 'restaurant_owner') => {
+  const register = async (email: string, fullName: string, role: UserRole = 'restaurant_owner'): Promise<UserProfile> => {
     setIsLoading(true);
     try {
       const newUser: UserProfile = {
@@ -91,6 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         role
       };
       setUser(newUser);
+      localStorage.setItem('smartqr_current_user', JSON.stringify(newUser));
+      return newUser;
     } finally {
       setIsLoading(false);
     }

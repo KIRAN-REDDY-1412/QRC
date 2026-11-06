@@ -86,7 +86,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // - Super Admin sees ALL restaurants across the SaaS platform
   // - Restaurant Owner sees ONLY their own restaurant(s)
   const visibleRestaurants = useMemo(() => {
-    if (!user) return allRestaurants;
+    if (!user) return [];
     if (isSuperAdmin) return allRestaurants;
     return allRestaurants.filter(r => 
       (r.owner_id && r.owner_id === user.id) || 
@@ -95,7 +95,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [allRestaurants, user, isSuperAdmin]);
 
   const [currentRestaurant, setCurrentRestaurantState] = useState<Restaurant | null>(() => {
-    return visibleRestaurants.length > 0 ? visibleRestaurants[0] : (allRestaurants[0] || null);
+    if (visibleRestaurants.length > 0) return visibleRestaurants[0];
+    if (isSuperAdmin && allRestaurants.length > 0) return allRestaurants[0];
+    return null;
   });
 
   // Keep owner restaurants isolated and auto-provision newly registered owners

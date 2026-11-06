@@ -41,6 +41,8 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
   onOpenUpiPayment
 }) => {
   const [customerName, setCustomerName] = useState<string>('');
+  const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [orderType, setOrderType] = useState<'dine_in' | 'takeaway'>('dine_in');
   const [orderNotes, setOrderNotes] = useState<string>('');
   const [isSent, setIsSent] = useState<boolean>(false);
 
@@ -50,22 +52,23 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
 
   // Format WhatsApp Order Message
   const handleSendWhatsAppOrder = () => {
-    const rawPhone = restaurant.whatsapp_number || restaurant.phone || '919820012345';
-    const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+    const rawPhone = (restaurant.whatsapp_number || restaurant.phone || '919820012345').replace(/[^0-9]/g, '');
+    const cleanPhone = rawPhone.startsWith('91') ? rawPhone : `91${rawPhone}`;
 
     const lines = [
-      `🍽️ *NEW DINE-IN ORDER*`,
-      `📍 *${restaurant.name}*`,
-      `🏷️ *Table:* ${tableNumber || 'Main Dining'}`,
-      customerName ? `👤 *Guest:* ${customerName}` : null,
+      `🍽️ *NEW FOOD ORDER - ${restaurant.name.toUpperCase()}*`,
+      `🏷️ *Order Type:* ${orderType === 'dine_in' ? `Dine-In (${tableNumber || 'Table 1'})` : 'Takeaway / Parcel'}`,
+      customerName ? `👤 *Customer Name:* ${customerName}` : null,
+      customerPhone ? `📞 *Customer Phone:* ${customerPhone}` : null,
       `---------------------------------`,
+      `🛒 *ITEMS ORDERED:*`,
       ...cartItems.map(ci => `• ${ci.quantity}x ${ci.item.name} - ₹${ci.item.price * ci.quantity}`),
       `---------------------------------`,
-      `💵 *Subtotal:* ₹${subtotal.toFixed(2)}`,
+      `💵 *Item Subtotal:* ₹${subtotal.toFixed(2)}`,
       `🏛️ *GST (5%):* ₹${gst.toFixed(2)}`,
-      `💰 *Grand Total:* ₹${grandTotal.toFixed(2)}`,
-      orderNotes ? `\n📝 *Kitchen Note:* ${orderNotes}` : null,
-      `\n⏱️ Sent via SmartQR Digital Menu`
+      `💰 *Total Amount Payable:* ₹${grandTotal.toFixed(2)}`,
+      orderNotes ? `\n📝 *Kitchen Special Instructions:* ${orderNotes}` : null,
+      `\n✅ Please confirm my food order and estimated preparation time. Thank you!`
     ].filter(Boolean);
 
     const message = lines.join('\n');
@@ -75,8 +78,9 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
     saveStoredOrder({
       id: `ord-${Date.now()}`,
       restaurant_id: restaurant.id,
-      table_number: tableNumber || 'Main Dining',
+      table_number: orderType === 'dine_in' ? (tableNumber || 'Table 1') : 'Takeaway',
       customer_name: customerName,
+      customer_phone: customerPhone,
       items: cartItems,
       subtotal,
       tax: gst,
@@ -92,7 +96,7 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
       onClearCart();
       setIsSent(false);
       onClose();
-    }, 800);
+    }, 600);
   };
 
   if (!isOpen) return null;
@@ -196,11 +200,56 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
                 </div>
               ))}
 
-              {/* Special Instructions */}
-              <div className="pt-2">
+              {/* Order Options & Customer Details */}
+              <div className="space-y-2 pt-2 border-t border-slate-800">
+                {/* Dine-In vs Takeaway */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setOrderType('dine_in')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      orderType === 'dine_in'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                    }`}
+                  >
+                    <Utensils className="w-3.5 h-3.5" />
+                    <span>Dine-In ({tableNumber || 'Table 1'})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOrderType('takeaway')}
+                    className={`py-1.5 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                      orderType === 'takeaway'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                    }`}
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Takeaway / Parcel</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Your Name (Optional)"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 placeholder-slate-500"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number (Optional)"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 placeholder-slate-500 font-mono"
+                  />
+                </div>
+
                 <input
                   type="text"
-                  placeholder="Special instructions (e.g. less spicy, no onion)..."
+                  placeholder="Special instructions (e.g. less spicy, extra chutney)..."
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:outline-none focus:border-emerald-500 placeholder-slate-500"
@@ -212,10 +261,10 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
 
         {/* Footer Actions & Bill Summary */}
         {cartItems.length > 0 && (
-          <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/90 space-y-3">
+          <div className="p-4 sm:p-5 border-t border-slate-800 bg-slate-900/95 space-y-3">
             <div className="space-y-1 text-xs">
               <div className="flex justify-between text-slate-400">
-                <span>Subtotal</span>
+                <span>Subtotal ({cartItems.reduce((acc, ci) => acc + ci.quantity, 0)} items)</span>
                 <span>₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-slate-400">
@@ -223,7 +272,7 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
                 <span>₹{gst.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-black text-white text-sm pt-1 border-t border-slate-800">
-                <span>Grand Total</span>
+                <span>Total Amount Payable</span>
                 <span className="text-emerald-400 text-base">₹{grandTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -232,14 +281,19 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
               {/* WhatsApp Order Dispatch Button */}
               <button
                 onClick={handleSendWhatsAppOrder}
-                className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+                className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20ba5a] hover:to-[#0f7a6c] text-white font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 active:scale-95"
               >
                 {isSent ? (
-                  <Check className="w-4 h-4" />
+                  <>
+                    <Check className="w-4 h-4 animate-bounce" />
+                    <span>Opening WhatsApp...</span>
+                  </>
                 ) : (
-                  <Send className="w-4 h-4" />
+                  <>
+                    <MessageSquare className="w-4 h-4 fill-white" />
+                    <span>Order via WhatsApp</span>
+                  </>
                 )}
-                <span>{isSent ? 'Opening WhatsApp...' : 'Send Order to Kitchen'}</span>
               </button>
 
               {/* Request Bill & UPI Button */}
@@ -248,12 +302,16 @@ export const MenuCartDrawer: React.FC<MenuCartDrawerProps> = ({
                   onClose();
                   onOpenUpiPayment();
                 }}
-                className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition flex items-center justify-center gap-2 border border-amber-500/30"
+                className="py-3.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs transition flex items-center justify-center gap-2 border border-amber-500/30 whitespace-nowrap"
               >
                 <CreditCard className="w-4 h-4 text-amber-400" />
                 <span>Pay via UPI</span>
               </button>
             </div>
+
+            <p className="text-[10px] text-center text-slate-400">
+              📲 Dispatches your complete order directly to {restaurant.name}'s official WhatsApp for instant kitchen confirmation.
+            </p>
           </div>
         )}
       </div>
