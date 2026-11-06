@@ -33,7 +33,7 @@ export const supabase = isLiveSupabase
 
 export const DEFAULT_PLANS: SubscriptionPlan[] = [
   {
-    id: 'plan-basic',
+    id: '7a683ce9-ca2e-41ca-99f3-ebf3b107f878',
     code: 'basic',
     name: 'Basic Plan',
     description: 'Essential digital QR menu platform for cafes, dhabas, food stalls, and modern diners.',
@@ -63,7 +63,7 @@ export const DEFAULT_PLANS: SubscriptionPlan[] = [
     ]
   },
   {
-    id: 'plan-premium',
+    id: '2c3f42e1-88b9-4007-833f-e34ee1428e25',
     code: 'premium',
     name: 'Premium Luxury Plan',
     description: 'The complete all-inclusive bespoke suite for high-growth cafes, multi-outlet restaurants, and fine-dining lounges.',
@@ -333,7 +333,7 @@ export const DEMO_SETTINGS = DEFAULT_SETTINGS;
 export const DEMO_SUBSCRIPTION: Subscription = {
   id: '00000000-0000-0000-0000-000000000000',
   restaurant_id: '',
-  plan_id: 'plan-basic',
+  plan_id: DEFAULT_PLANS[0].id,
   status: 'trialing',
   billing_cycle: 'monthly',
   current_period_start: new Date().toISOString(),
@@ -481,7 +481,7 @@ export const getStoredSubscription = (restaurantId: string): Subscription => {
   const newTrialSub: Subscription = {
     id: `sub-${restaurantId}`,
     restaurant_id: restaurantId,
-    plan_id: 'plan-basic',
+    plan_id: DEFAULT_PLANS[0].id,
     status: 'trialing',
     billing_cycle: 'monthly',
     current_period_start: now.toISOString(),
