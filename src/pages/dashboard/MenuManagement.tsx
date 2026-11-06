@@ -18,7 +18,14 @@ import {
   Search,
   Lock,
   FileSpreadsheet,
-  Crown
+  Crown,
+  Coffee,
+  Wine,
+  Pizza,
+  Layers,
+  Award,
+  Soup,
+  Utensils
 } from 'lucide-react';
 import { BulkMenuManagerModal } from '@/components/modals/BulkMenuManagerModal';
 
@@ -70,6 +77,7 @@ export const MenuManagement: React.FC = () => {
   // Form states for Category
   const [categoryName, setCategoryName] = useState('');
   const [categoryDescription, setCategoryDescription] = useState('');
+  const [categoryIcon, setCategoryIcon] = useState('Utensils');
 
   if (!currentRestaurant) return null;
 
@@ -190,6 +198,7 @@ export const MenuManagement: React.FC = () => {
     setEditingCategory(null);
     setCategoryName('');
     setCategoryDescription('');
+    setCategoryIcon('Utensils');
     setIsCategoryModalOpen(true);
   };
 
@@ -197,20 +206,22 @@ export const MenuManagement: React.FC = () => {
     setEditingCategory(cat);
     setCategoryName(cat.name);
     setCategoryDescription(cat.description || '');
+    setCategoryIcon(cat.icon || 'Utensils');
     setIsCategoryModalOpen(true);
   };
 
   const handleSaveCategory = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryName) return;
+    if (!categoryName.trim()) return;
 
     if (editingCategory) {
       updateCategory(editingCategory.id, {
-        name: categoryName,
-        description: categoryDescription
+        name: categoryName.trim(),
+        description: categoryDescription.trim(),
+        icon: categoryIcon
       });
     } else {
-      addCategory(categoryName, categoryDescription);
+      addCategory(categoryName.trim(), categoryDescription.trim(), categoryIcon);
     }
     setIsCategoryModalOpen(false);
   };
@@ -686,15 +697,91 @@ export const MenuManagement: React.FC = () => {
 
             <form onSubmit={handleSaveCategory} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">Category Name *</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1">
+                  Category Name * <span className="text-[11px] font-normal text-slate-400">(Type any custom name)</span>
+                </label>
                 <input
                   type="text"
                   required
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  placeholder="e.g. Starters, Tandoor, Desserts"
+                  placeholder="e.g. Starters, Tandoor & Kebabs, Midnight Shakes, Chef's Special"
                   className="w-full px-3.5 py-2.5 bg-slate-950 text-white text-xs rounded-xl border border-slate-800 focus:outline-none focus:border-emerald-500"
                 />
+
+                {/* Quick suggestions pills */}
+                <div className="mt-2">
+                  <span className="text-[10px] font-mono text-slate-400 block mb-1">
+                    💡 Quick Suggestions (Tap to fill):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                    {[
+                      'Starters & Appetizers',
+                      'Main Course',
+                      'Tandoor & Kebabs',
+                      'Dum Biryani & Rice',
+                      'Tandoori Breads & Naan',
+                      'South Indian Tiffin',
+                      'Chinese & Noodles',
+                      'Pizzas & Burgers',
+                      'Desserts & Sweets',
+                      'Beverages & Mocktails',
+                      'Chai & Coffee',
+                      'Breakfast Specials',
+                      "Chef's Signature"
+                    ].map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => setCategoryName(suggestion)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md border transition ${
+                          categoryName === suggestion
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-bold'
+                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+                        }`}
+                      >
+                        + {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Icon Selector */}
+              <div>
+                <label className="text-xs font-bold text-slate-300 block mb-1">
+                  Section Icon
+                </label>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5">
+                  {[
+                    { id: 'Utensils', label: 'Dining', icon: Utensils },
+                    { id: 'Flame', label: 'Tandoor/Spicy', icon: Flame },
+                    { id: 'Sparkles', label: 'Specials', icon: Sparkles },
+                    { id: 'Coffee', label: 'Cafe/Chai', icon: Coffee },
+                    { id: 'Wine', label: 'Drinks', icon: Wine },
+                    { id: 'Pizza', label: 'Pizza/Bake', icon: Pizza },
+                    { id: 'Layers', label: 'Breads/Thali', icon: Layers },
+                    { id: 'Soup', label: 'Soups/Bowls', icon: Soup },
+                    { id: 'Award', label: 'Premium', icon: Award }
+                  ].map((ic) => {
+                    const IconComp = ic.icon;
+                    return (
+                      <button
+                        key={ic.id}
+                        type="button"
+                        onClick={() => setCategoryIcon(ic.id)}
+                        className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                          categoryIcon === ic.id
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
+                            : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4" />
+                        <span className="text-[9px] truncate max-w-full">{ic.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>

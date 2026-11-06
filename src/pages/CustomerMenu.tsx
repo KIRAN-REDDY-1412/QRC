@@ -15,7 +15,9 @@ import {
   getStoredSettings, 
   ALL_TEMPLATES, 
   recordScanEvent,
-  getStoredSubscription
+  getStoredSubscription,
+  isLiveSupabase,
+  supabase
 } from '@/lib/supabase';
 import { TemplateRenderer } from '@/templates/TemplateRenderer';
 import { MenuCartDrawer } from '@/components/menu/MenuCartDrawer';
@@ -86,12 +88,23 @@ export const CustomerMenu: React.FC = () => {
     loadMenu();
   }, [restaurantSlug]);
 
-  const loadMenu = () => {
+  const loadMenu = async () => {
     setIsLoading(true);
     setError(null);
 
     const allRestaurants = getStoredRestaurants();
-    const found = allRestaurants.find(r => r.slug.toLowerCase() === restaurantSlug?.toLowerCase());
+    let found = allRestaurants.find(r => r.slug.toLowerCase() === restaurantSlug?.toLowerCase());
+
+    if (!found && isLiveSupabase && restaurantSlug) {
+      try {
+        const { data } = await supabase.from('restaurants').select('*').eq('slug', restaurantSlug.toLowerCase()).maybeSingle();
+        if (data) {
+          found = data as Restaurant;
+        }
+      } catch (err) {
+        console.warn('Supabase restaurant lookup notice:', err);
+      }
+    }
 
     if (!found) {
       setError(`Restaurant "${restaurantSlug}" could not be found.`);
@@ -119,9 +132,22 @@ export const CustomerMenu: React.FC = () => {
       return;
     }
 
-    const loadedCats = getStoredCategories(found.id);
-    const loadedItems = getStoredItems(found.id);
+    let loadedCats = getStoredCategories(found.id);
+    let loadedItems = getStoredItems(found.id);
     const loadedSettings = getStoredSettings(found.id);
+
+    if (isLiveSupabase) {
+      try {
+        const [catsRes, itemsRes] = await Promise.all([
+          supabase.from('menu_categories').select('*').eq('restaurant_id', found.id).order('order_index'),
+          supabase.from('menu_items').select('*').eq('restaurant_id', found.id).order('order_index')
+        ]);
+        if (catsRes.data && catsRes.data.length > 0) loadedCats = catsRes.data as MenuCategory[];
+        if (itemsRes.data && itemsRes.data.length > 0) loadedItems = itemsRes.data as MenuItem[];
+      } catch (err) {
+        console.warn('Supabase menu items lookup notice:', err);
+      }
+    }
 
     setCategories(loadedCats);
     setItems(loadedItems);

@@ -322,6 +322,30 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setItems(currentItms);
     setTemplateSettings(currentSets);
 
+    if (isLiveSupabase && currentRestaurant) {
+      supabase
+        .from('menu_categories')
+        .select('*')
+        .eq('restaurant_id', currentRestaurant.id)
+        .order('order_index')
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            setCategories(data as MenuCategory[]);
+          }
+        });
+
+      supabase
+        .from('menu_items')
+        .select('*')
+        .eq('restaurant_id', currentRestaurant.id)
+        .order('order_index')
+        .then(({ data, error }) => {
+          if (!error && data && data.length > 0) {
+            setItems(data as MenuItem[]);
+          }
+        });
+    }
+
     // Initial tables demo
     const storedTables = localStorage.getItem(`smartqr_tables_${currentRestaurant.id}`);
     if (storedTables) {
@@ -524,6 +548,20 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_categories');
     const fullList: MenuCategory[] = allStored ? JSON.parse(allStored) : DEMO_CATEGORIES;
     saveStoredCategories([...fullList.filter(c => c.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_categories').insert({
+        id: newCat.id,
+        restaurant_id: newCat.restaurant_id,
+        name: newCat.name,
+        description: newCat.description,
+        icon: newCat.icon,
+        order_index: newCat.order_index,
+        is_active: newCat.is_active
+      }).then(({ error }) => {
+        if (error) console.warn('Supabase menu_categories insert notice:', error.message);
+      });
+    }
   };
 
   const updateCategory = (id: string, updates: Partial<MenuCategory>) => {
@@ -533,6 +571,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_categories');
     const fullList: MenuCategory[] = allStored ? JSON.parse(allStored) : DEMO_CATEGORIES;
     saveStoredCategories([...fullList.filter(c => c.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_categories').update(updates).eq('id', id).then(({ error }) => {
+        if (error) console.warn('Supabase menu_categories update notice:', error.message);
+      });
+    }
   };
 
   const deleteCategory = (id: string) => {
@@ -542,6 +586,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_categories');
     const fullList: MenuCategory[] = allStored ? JSON.parse(allStored) : DEMO_CATEGORIES;
     saveStoredCategories([...fullList.filter(c => c.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_categories').delete().eq('id', id).then(({ error }) => {
+        if (error) console.warn('Supabase menu_categories delete notice:', error.message);
+      });
+    }
   };
 
   const reorderCategories = (orderedIds: string[]) => {
@@ -572,6 +622,27 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_items');
     const fullList: MenuItem[] = allStored ? JSON.parse(allStored) : DEMO_ITEMS;
     saveStoredItems([...fullList.filter(i => i.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_items').insert({
+        id: newItem.id,
+        restaurant_id: newItem.restaurant_id,
+        category_id: newItem.category_id,
+        name: newItem.name,
+        description: newItem.description,
+        caption: newItem.caption,
+        price: newItem.price,
+        discount_price: newItem.discount_price,
+        image_url: newItem.image_url,
+        is_available: newItem.is_available,
+        is_featured: newItem.is_featured,
+        dietary_type: newItem.dietary_type,
+        spice_level: newItem.spice_level,
+        order_index: newItem.order_index
+      }).then(({ error }) => {
+        if (error) console.warn('Supabase menu_items insert notice:', error.message);
+      });
+    }
   };
 
   const updateItem = (id: string, updates: Partial<MenuItem>) => {
@@ -581,6 +652,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_items');
     const fullList: MenuItem[] = allStored ? JSON.parse(allStored) : DEMO_ITEMS;
     saveStoredItems([...fullList.filter(i => i.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_items').update(updates).eq('id', id).then(({ error }) => {
+        if (error) console.warn('Supabase menu_items update notice:', error.message);
+      });
+    }
   };
 
   const deleteItem = (id: string) => {
@@ -590,6 +667,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const allStored = localStorage.getItem('smartqr_items');
     const fullList: MenuItem[] = allStored ? JSON.parse(allStored) : DEMO_ITEMS;
     saveStoredItems([...fullList.filter(i => i.restaurant_id !== currentRestaurant.id), ...updated]);
+
+    if (isLiveSupabase) {
+      supabase.from('menu_items').delete().eq('id', id).then(({ error }) => {
+        if (error) console.warn('Supabase menu_items delete notice:', error.message);
+      });
+    }
   };
 
   const toggleItemAvailability = (id: string) => {
