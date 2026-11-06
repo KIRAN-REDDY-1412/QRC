@@ -8,7 +8,8 @@ import {
   Subscription, 
   RestaurantTemplateSettings, 
   PaymentRecord,
-  AnalyticsEvent
+  AnalyticsEvent,
+  CustomerOrder
 } from '@/types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -31,74 +32,44 @@ export const supabase = isLiveSupabase
 
 export const DEFAULT_PLANS: SubscriptionPlan[] = [
   {
-    id: 'plan-free',
-    code: 'free',
-    name: 'Free Forever',
-    description: 'Perfect for small food stalls, dhabas, and chai points starting their digital journey.',
-    monthly_price: 0,
-    yearly_price: 0,
+    id: 'plan-basic',
+    code: 'basic',
+    name: 'Basic Plan',
+    description: 'Essential digital QR menu platform for cafes, dhabas, food stalls, and modern diners.',
+    monthly_price: 399,
+    yearly_price: 3590,
     currency: 'INR',
-    yearly_discount_percent: 0,
+    yearly_discount_percent: 25,
     is_active: true,
-    max_categories: 5,
-    max_items: 30,
-    allow_food_images: false,
-    allow_custom_colors: false,
-    allow_custom_fonts: false,
-    allow_multi_language: false,
+    max_categories: 15,
+    max_items: 100,
+    allow_food_images: true,
+    allow_custom_colors: true,
+    allow_custom_fonts: true,
+    allow_multi_language: true,
     remove_saas_branding: false,
     allow_table_qr: false,
-    allowed_template_tiers: ['free'],
+    allowed_template_tiers: ['basic', 'free'],
     features: [
-      'Basic customer-facing menu',
-      '3 Classic free templates',
-      'Permanent restaurant QR code',
-      'Menu item categorization',
-      'Instant item availability toggle',
-      'SmartQR branding badge',
-      'Basic owner analytics'
+      'Digital QR Menu with instant live cloud updates',
+      '5 Classic & Contemporary responsive templates',
+      'Permanent Restaurant QR code & Printable Standee',
+      'High-resolution food photos & descriptions',
+      'Dietary classification badges (Veg, Non-Veg, Jain, Vegan)',
+      'Multi-language menu translation support',
+      'Live category & dish availability toggles',
+      'Core diner scan & visit analytics'
     ]
   },
   {
     id: 'plan-premium',
     code: 'premium',
-    name: 'Premium',
-    description: 'Designed for thriving cafes, multi-cuisine diners, and cloud kitchens wanting high conversion.',
-    monthly_price: 799,
-    yearly_price: 7990,
+    name: 'Premium Luxury Plan',
+    description: 'The complete all-inclusive bespoke suite for high-growth cafes, multi-outlet restaurants, and fine-dining lounges.',
+    monthly_price: 999,
+    yearly_price: 8990,
     currency: 'INR',
-    yearly_discount_percent: 17,
-    is_active: true,
-    max_categories: 25,
-    max_items: 200,
-    allow_food_images: true,
-    allow_custom_colors: true,
-    allow_custom_fonts: true,
-    allow_multi_language: true,
-    remove_saas_branding: true,
-    allow_table_qr: false,
-    allowed_template_tiers: ['free', 'premium'],
-    features: [
-      'All Free features included',
-      'Access to 6 Premium templates',
-      'High-resolution food photos',
-      'Rich food descriptions & dietary badges',
-      'Custom brand colors & fonts',
-      'Featured chef specials & offer banners',
-      'Multi-language menu support (Hindi, Marathi, etc.)',
-      'Remove SmartQR SaaS branding',
-      'Advanced scan & engagement analytics'
-    ]
-  },
-  {
-    id: 'plan-premium-plus',
-    code: 'premium_plus',
-    name: 'Premium Plus Luxury',
-    description: 'The ultimate bespoke showcase for luxury fine-dining, royal Indian heritage restaurants, and 5-star lounges.',
-    monthly_price: 1999,
-    yearly_price: 19990,
-    currency: 'INR',
-    yearly_discount_percent: 20,
+    yearly_discount_percent: 25,
     is_active: true,
     max_categories: 100,
     max_items: 1000,
@@ -108,16 +79,23 @@ export const DEFAULT_PLANS: SubscriptionPlan[] = [
     allow_multi_language: true,
     remove_saas_branding: true,
     allow_table_qr: true,
-    allowed_template_tiers: ['free', 'premium', 'premium_plus'],
+    allow_ordering: true,
+    allow_upi_payment: true,
+    allow_bulk_import: true,
+    allow_review_booster: true,
+    allowed_template_tiers: ['basic', 'premium', 'premium_plus', 'free'],
     features: [
-      'All Premium features included',
-      'Access to ALL 15 templates (including 6 Luxury & Glassmorphism themes)',
-      'Exclusive Black Gold, Royal Indian & Glassmorphic visual designs',
-      'Smooth micro-animations & luxury typography',
-      'Table-specific QR codes with table numbers',
-      'Tasting menu & wine pairing notes',
-      'Priority 24/7 VIP onboarding support',
-      'Custom CSS overrides & white-label ready'
+      'Everything in Basic Plan included',
+      'Access to ALL 15 Luxury & Glassmorphism templates',
+      'Instant QR Scan Opening Intro Animation (Royal Glow & Particles)',
+      'Custom Branded QR with Center Restaurant Logo & Monogram',
+      'Table-Specific QR Codes & Table Ordering Cart',
+      'Instant UPI Payment Integration (GPay, PhonePe, Paytm)',
+      'Excel & CSV Bulk Menu Import & Instant Export',
+      'Google Maps 5-Star Review Booster Popups',
+      '100% White-Label: Remove all SmartQR SaaS branding',
+      'Real-Time Waiter Calling & Table Service Notifications',
+      'Priority 24/7 VIP Phone & WhatsApp Support'
     ]
   }
 ];
@@ -331,6 +309,12 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     banner_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
     opening_time: '12:00 PM',
     closing_time: '11:30 PM',
+    whatsapp_number: '+919820012345',
+    upi_id: 'saffrondarbar@okaxis',
+    google_review_url: 'https://g.page/r/saffron-heritage-darbar/review',
+    enable_ordering: true,
+    enable_upi: true,
+    enable_reviews: true,
     is_active: true,
     is_pure_veg: false,
     created_at: new Date().toISOString()
@@ -354,6 +338,12 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     banner_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
     opening_time: '08:00 AM',
     closing_time: '11:00 PM',
+    whatsapp_number: '+919845067890',
+    upi_id: 'bombayroast@icici',
+    google_review_url: 'https://g.page/r/bombay-roast-bistro/review',
+    enable_ordering: true,
+    enable_upi: true,
+    enable_reviews: true,
     is_active: true,
     is_pure_veg: false,
     created_at: new Date().toISOString()
@@ -413,6 +403,43 @@ export const DEMO_CATEGORIES: MenuCategory[] = [
     description: 'Refreshing traditional infusions of rose, khus, and kokum.',
     icon: 'Wine',
     order_index: 6,
+    is_active: true
+  },
+  // The Bombay Roast & Bistro categories
+  {
+    id: 'cat-bombay-coffee',
+    restaurant_id: 'rest-bombay-cafe',
+    name: 'Specialty Coffee & Brews',
+    description: 'Single-origin estate beans roasted to perfection, brewed manually & espresso-based.',
+    icon: 'Coffee',
+    order_index: 1,
+    is_active: true
+  },
+  {
+    id: 'cat-bombay-toasts',
+    restaurant_id: 'rest-bombay-cafe',
+    name: 'Sourdough Toasts & Melts',
+    description: '48-hour fermented wild yeast country sourdough with organic toppings.',
+    icon: 'Utensils',
+    order_index: 2,
+    is_active: true
+  },
+  {
+    id: 'cat-bombay-pizzas',
+    restaurant_id: 'rest-bombay-cafe',
+    name: 'Woodfired Neapolitan Pizzas',
+    description: 'Hand-stretched dough fired at 450°C with Fior di Latte mozzarella.',
+    icon: 'Flame',
+    order_index: 3,
+    is_active: true
+  },
+  {
+    id: 'cat-bombay-desserts',
+    restaurant_id: 'rest-bombay-cafe',
+    name: 'Bakery & Sweet Plates',
+    description: 'Freshly baked viennoiserie, cruffins, and artisanal entremets.',
+    icon: 'Sparkles',
+    order_index: 4,
     is_active: true
   }
 ];
@@ -611,6 +638,89 @@ export const DEMO_ITEMS: MenuItem[] = [
     calories: 140,
     preparation_time: '5 mins',
     order_index: 1
+  },
+  // The Bombay Roast & Bistro items
+  {
+    id: 'item-bombay-pour-over',
+    restaurant_id: 'rest-bombay-cafe',
+    category_id: 'cat-bombay-coffee',
+    name: 'Coorg Estate V60 Pour Over',
+    description: 'Light roast washed Arabica with notes of wild orange blossom, jasmine, and sugarcane sweetness.',
+    price: 240,
+    discount_price: 220,
+    image_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+    is_available: true,
+    is_featured: true,
+    dietary_type: 'vegan',
+    spice_level: 0,
+    calories: 10,
+    preparation_time: '6 mins',
+    order_index: 1
+  },
+  {
+    id: 'item-bombay-flat-white',
+    restaurant_id: 'rest-bombay-cafe',
+    category_id: 'cat-bombay-coffee',
+    name: 'Velvet Microfoam Flat White',
+    description: 'Double ristretto shot with silky steamed milk and subtle caramel crema art.',
+    price: 220,
+    image_url: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=600&q=80',
+    is_available: true,
+    is_featured: false,
+    dietary_type: 'veg',
+    spice_level: 0,
+    calories: 120,
+    preparation_time: '5 mins',
+    order_index: 2
+  },
+  {
+    id: 'item-bombay-avocado-toast',
+    restaurant_id: 'rest-bombay-cafe',
+    category_id: 'cat-bombay-toasts',
+    name: 'Hass Avocado & Danish Feta Tartine',
+    description: 'Toasted seeded sourdough, smashed Haas avocados, crumbled Danish feta, pomegranate pearls, and lemon dukkah.',
+    price: 380,
+    discount_price: 350,
+    image_url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80',
+    is_available: true,
+    is_featured: true,
+    dietary_type: 'veg',
+    spice_level: 0,
+    calories: 340,
+    preparation_time: '10 mins',
+    order_index: 1
+  },
+  {
+    id: 'item-bombay-burrata-pizza',
+    restaurant_id: 'rest-bombay-cafe',
+    category_id: 'cat-bombay-pizzas',
+    name: 'Truffle Burrata & San Marzano Pizza',
+    description: 'Whole Pugliese burrata center, San Marzano tomato coulis, wild rocket, basil oil, and white truffle glaze.',
+    price: 620,
+    image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80',
+    is_available: true,
+    is_featured: true,
+    dietary_type: 'veg',
+    spice_level: 0,
+    calories: 680,
+    preparation_time: '15 mins',
+    order_index: 1
+  },
+  {
+    id: 'item-bombay-croissant',
+    restaurant_id: 'rest-bombay-cafe',
+    category_id: 'cat-bombay-desserts',
+    name: 'Double Baked Almond & Frangipane Croissant',
+    description: 'Golden flaky French butter pastry stuffed with almond cream, toasted flakes, and vanilla snow.',
+    price: 260,
+    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
+    is_available: true,
+    is_featured: false,
+    dietary_type: 'egg',
+    spice_level: 0,
+    calories: 390,
+    preparation_time: '5 mins',
+    order_index: 1
   }
 ];
 
@@ -623,19 +733,25 @@ export const DEMO_SETTINGS: RestaurantTemplateSettings = {
   show_photos: true,
   show_dietary_badges: true,
   show_spice_level: true,
-  show_prices: true
+  show_prices: true,
+  opening_animation_enabled: true,
+  opening_animation_style: 'luxury_particles',
+  opening_animation_duration: 1.8,
+  opening_animation_tagline: 'Experience Royal Awadhi Gastronomy',
+  opening_animation_skip_button: true,
+  opening_animation_sound: false
 };
 
 export const DEMO_SUBSCRIPTION: Subscription = {
   id: 'sub-saffron-1',
   restaurant_id: 'rest-saffron-darbar',
-  plan_id: 'plan-premium-plus',
+  plan_id: 'plan-premium',
   status: 'active',
   billing_cycle: 'yearly',
   current_period_start: new Date(Date.now() - 30 * 86400000).toISOString(),
   current_period_end: new Date(Date.now() + 335 * 86400000).toISOString(),
   auto_renew: true,
-  plan: DEFAULT_PLANS[2]
+  plan: DEFAULT_PLANS[1]
 };
 
 // Storage keys for localStorage persistence in mock mode
@@ -656,7 +772,17 @@ const STORAGE_KEYS = {
 
 export const getStoredPlans = (): SubscriptionPlan[] => {
   const data = localStorage.getItem(STORAGE_KEYS.PLANS);
-  return data ? JSON.parse(data) : DEFAULT_PLANS;
+  if (!data) return DEFAULT_PLANS;
+  try {
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed) || parsed.length !== 2 || parsed.some((p: any) => p.code === 'free' || p.code === 'premium_plus')) {
+      localStorage.setItem(STORAGE_KEYS.PLANS, JSON.stringify(DEFAULT_PLANS));
+      return DEFAULT_PLANS;
+    }
+    return parsed;
+  } catch {
+    return DEFAULT_PLANS;
+  }
 };
 
 export const saveStoredPlans = (plans: SubscriptionPlan[]) => {
@@ -672,9 +798,13 @@ export const saveStoredRestaurants = (restaurants: Restaurant[]) => {
   localStorage.setItem(STORAGE_KEYS.RESTAURANTS, JSON.stringify(restaurants));
 };
 
-export const getStoredCategories = (restaurantId: string): MenuCategory[] => {
+export const getAllStoredCategories = (): MenuCategory[] => {
   const data = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
-  const all: MenuCategory[] = data ? JSON.parse(data) : DEMO_CATEGORIES;
+  return data ? JSON.parse(data) : DEMO_CATEGORIES;
+};
+
+export const getStoredCategories = (restaurantId: string): MenuCategory[] => {
+  const all = getAllStoredCategories();
   return all.filter(c => c.restaurant_id === restaurantId);
 };
 
@@ -682,9 +812,13 @@ export const saveStoredCategories = (categories: MenuCategory[]) => {
   localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
 };
 
-export const getStoredItems = (restaurantId: string): MenuItem[] => {
+export const getAllStoredItems = (): MenuItem[] => {
   const data = localStorage.getItem(STORAGE_KEYS.ITEMS);
-  const all: MenuItem[] = data ? JSON.parse(data) : DEMO_ITEMS;
+  return data ? JSON.parse(data) : DEMO_ITEMS;
+};
+
+export const getStoredItems = (restaurantId: string): MenuItem[] => {
+  const all = getAllStoredItems();
   return all.filter(i => i.restaurant_id === restaurantId);
 };
 
@@ -695,7 +829,29 @@ export const saveStoredItems = (items: MenuItem[]) => {
 export const getStoredSettings = (restaurantId: string): RestaurantTemplateSettings => {
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
   const all: Record<string, RestaurantTemplateSettings> = data ? JSON.parse(data) : { [DEMO_SETTINGS.restaurant_id]: DEMO_SETTINGS };
-  return all[restaurantId] || { ...DEMO_SETTINGS, restaurant_id: restaurantId };
+  if (all[restaurantId]) return all[restaurantId];
+  
+  if (restaurantId === 'rest-bombay-cafe') {
+    return {
+      restaurant_id: 'rest-bombay-cafe',
+      template_id: 'tpl-8', // Colorful Cafe
+      accent_color: '#ea580c',
+      font_family: 'Outfit',
+      card_style: 'modern',
+      show_photos: true,
+      show_dietary_badges: true,
+      show_spice_level: true,
+      show_prices: true,
+      opening_animation_enabled: true,
+      opening_animation_style: 'gold_glow',
+      opening_animation_duration: 1.6,
+      opening_animation_tagline: 'Freshly Brewed & Artisanal Bakes',
+      opening_animation_skip_button: true,
+      opening_animation_sound: false
+    };
+  }
+
+  return { ...DEMO_SETTINGS, restaurant_id: restaurantId };
 };
 
 export const saveStoredSettings = (settings: RestaurantTemplateSettings) => {
@@ -716,7 +872,7 @@ export const getStoredSubscription = (restaurantId: string): Subscription => {
   return {
     id: `sub-${restaurantId}`,
     restaurant_id: restaurantId,
-    plan_id: 'plan-free',
+    plan_id: 'plan-basic',
     status: 'active',
     billing_cycle: 'monthly',
     current_period_start: new Date().toISOString(),
@@ -779,4 +935,17 @@ export const getScanCount = (restaurantId: string): number => {
   const all: AnalyticsEvent[] = data ? JSON.parse(data) : [];
   const count = all.filter(e => e.restaurant_id === restaurantId && e.event_type === 'qr_scan').length;
   return count > 0 ? count + 142 : 142; // baseline for realism
+};
+
+export const getStoredOrders = (restaurantId: string): CustomerOrder[] => {
+  const data = localStorage.getItem('smartqr_orders');
+  const all: CustomerOrder[] = data ? JSON.parse(data) : [];
+  return all.filter(o => o.restaurant_id === restaurantId);
+};
+
+export const saveStoredOrder = (order: CustomerOrder) => {
+  const data = localStorage.getItem('smartqr_orders');
+  const all: CustomerOrder[] = data ? JSON.parse(data) : [];
+  all.unshift(order);
+  localStorage.setItem('smartqr_orders', JSON.stringify(all));
 };

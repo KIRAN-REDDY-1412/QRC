@@ -115,3 +115,104 @@
     background: white !important;
   }
 }
+
+/* Motion Live Landing Page Animations */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(1deg);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(14px) rotate(-1.5deg);
+  }
+}
+
+@keyframes laser-sweep {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 88%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+@keyframes marquee-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.8;
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 4.5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 5.5s ease-in-out infinite;
+}
+
+.animate-laser-sweep {
+  animation: laser-sweep 2.4s ease-in-out infinite;
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 25s linear infinite;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-right 25s linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

@@ -17,24 +17,35 @@ import {
   ChevronRight,
   Utensils,
   Play,
-  CreditCard
+  CreditCard,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { ALL_TEMPLATES } from '@/lib/supabase';
+import { LandingPageMasterpiece } from './LandingPageMasterpiece';
+import { ConceptSensoryLuxury } from './landing/ConceptSensoryLuxury';
+import { ConceptMotionLive } from './landing/ConceptMotionLive';
+import { ConceptCyberGlass } from './landing/ConceptCyberGlass';
+import { ConceptRoyalGold } from './landing/ConceptRoyalGold';
+import { ConceptKitchenPulse } from './landing/ConceptKitchenPulse';
 
 export const LandingPage: React.FC = () => {
   const { plans } = usePlan();
   const { login, register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  const [activeConcept, setActiveConcept] = useState<'masterpiece' | 'sensory' | 'live' | 'cyber' | 'royal' | 'kitchen' | 'classic'>('masterpiece');
+  const [showSwitcher, setShowSwitcher] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  const freePlan = plans.find(p => p.code === 'free');
-  const premiumPlan = plans.find(p => p.code === 'premium');
-  const premiumPlusPlan = plans.find(p => p.code === 'premium_plus');
+  const basicPlan = plans.find(p => p.code === 'basic') || plans[0];
+  const premiumPlan = plans.find(p => p.code === 'premium') || plans[1];
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,12 +56,135 @@ export const LandingPage: React.FC = () => {
     } else {
       await login(email);
     }
+    setPassword('');
     setIsAuthModalOpen(false);
     navigate('/dashboard');
   };
 
+  const conceptSwitcher = showSwitcher ? (
+    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[100] max-w-[95vw] overflow-x-auto">
+      <div className="bg-[#111412]/95 backdrop-blur-xl border border-white/20 p-1.5 rounded-full shadow-2xl flex items-center gap-1">
+        <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-white/80 pl-3 pr-2 whitespace-nowrap">
+          <Sparkles className="w-3.5 h-3.5 animate-spin text-amber-300" />
+          Select Design:
+        </span>
+        <button
+          onClick={() => setActiveConcept('masterpiece')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+            activeConcept === 'masterpiece'
+              ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-lg scale-105 font-black'
+              : 'text-white/70 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
+          👑 Final Masterpiece (Your 2 Photos)
+        </button>
+        <button
+          onClick={() => setActiveConcept('sensory')}
+          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+            activeConcept === 'sensory'
+              ? 'bg-white text-slate-900 shadow-md font-bold'
+              : 'text-white/60 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          🌿 Atelier Minimal
+        </button>
+        <button
+          onClick={() => setActiveConcept('live')}
+          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+            activeConcept === 'live'
+              ? 'bg-emerald-500 text-slate-950 shadow-md'
+              : 'text-white/60 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          Kinetic Live ⚡
+        </button>
+        <button
+          onClick={() => setActiveConcept('classic')}
+          className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+            activeConcept === 'classic'
+              ? 'bg-slate-700 text-white'
+              : 'text-white/40 hover:text-white hover:bg-white/10'
+          }`}
+        >
+          Classic
+        </button>
+        <button
+          onClick={() => setShowSwitcher(false)}
+          className="w-6 h-6 rounded-full hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white ml-1 text-xs"
+          title="Close switcher"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  ) : (
+    <button
+      onClick={() => setShowSwitcher(true)}
+      className="fixed bottom-4 right-4 z-[90] px-3.5 py-2 rounded-full bg-black/60 hover:bg-black/90 text-white/60 hover:text-white border border-white/15 backdrop-blur-xl text-xs font-mono tracking-wider flex items-center gap-1.5 shadow-2xl transition"
+    >
+      <Palette className="w-3.5 h-3.5 text-amber-400" />
+      <span>Theme Variations</span>
+    </button>
+  );
+
+  if (activeConcept === 'masterpiece') {
+    return (
+      <div className="relative">
+        {conceptSwitcher}
+        <LandingPageMasterpiece />
+      </div>
+    );
+  }
+
+  if (activeConcept === 'sensory') {
+    return (
+      <div className="relative pt-12">
+        {conceptSwitcher}
+        <ConceptSensoryLuxury onOpenAuth={(mode) => { setAuthMode(mode); setIsAuthModalOpen(true); }} />
+      </div>
+    );
+  }
+
+  if (activeConcept === 'live') {
+    return (
+      <div className="relative pt-12">
+        {conceptSwitcher}
+        <ConceptMotionLive onOpenAuth={(mode) => { setAuthMode(mode); setIsAuthModalOpen(true); }} />
+      </div>
+    );
+  }
+
+  if (activeConcept === 'cyber') {
+    return (
+      <div className="relative pt-12">
+        {conceptSwitcher}
+        <ConceptCyberGlass />
+      </div>
+    );
+  }
+
+  if (activeConcept === 'royal') {
+    return (
+      <div className="relative pt-12">
+        {conceptSwitcher}
+        <ConceptRoyalGold />
+      </div>
+    );
+  }
+
+  if (activeConcept === 'kitchen') {
+    return (
+      <div className="relative pt-12">
+        {conceptSwitcher}
+        <ConceptKitchenPulse />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans pt-12">
+      {conceptSwitcher}
       {/* Top Navigation Bar */}
       <nav className="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -351,28 +485,52 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          {/* FREE PLAN */}
+        {/* Pricing Cards: Both Plans in One Frame */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
+          {/* BASIC PLAN */}
           <div className="bg-slate-900/60 p-8 rounded-3xl border border-slate-800 flex flex-col justify-between shadow-xl">
             <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Free Forever</span>
-              <h3 className="text-2xl font-bold text-white">Starter</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">₹0</span>
-                <span className="text-xs text-slate-400">/forever</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Standard Tier</span>
+              <h3 className="text-2xl font-bold text-white">{basicPlan?.name || 'Basic Plan'}</h3>
+              
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                <div className="flex items-baseline justify-between pb-2 border-b border-slate-800">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Monthly Rate</span>
+                    <span className="text-2xl font-black text-white">₹{basicPlan?.monthly_price || 399}</span>
+                    <span className="text-xs text-slate-400"> / month</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">Billed monthly</span>
+                </div>
+
+                <div className="flex items-baseline justify-between pt-1">
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] uppercase font-bold text-amber-300 block">Yearly Rate</span>
+                      <span className="text-[9px] bg-amber-400 text-slate-950 font-black px-1 rounded">Save 25%</span>
+                    </div>
+                    <span className="text-2xl font-black text-amber-300">₹{Math.round((basicPlan?.yearly_price || 3590) / 12)}</span>
+                    <span className="text-xs text-slate-400"> / mo</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-white block">₹{(basicPlan?.yearly_price || 3590).toLocaleString('en-IN')}</span>
+                    <span className="text-[9px] text-slate-500 block">billed annually</span>
+                  </div>
+                </div>
               </div>
+
               <p className="text-xs text-slate-400">
-                Essential contactless QR menu for food stalls, tea cafes, and dhabas.
+                {basicPlan?.description || 'Essential contactless QR menu for food stalls, tea cafes, and modern diners.'}
               </p>
 
-              <div className="pt-6 border-t border-slate-800 space-y-2.5">
+              <div className="pt-4 border-t border-slate-800 space-y-2.5">
                 {[
-                  'Permanent Restaurant QR code',
-                  '3 Classic Free Templates',
-                  'FSSAI Veg/Non-Veg badges',
-                  'Up to 30 food items',
-                  'Instant item availability toggle'
+                  'Permanent Restaurant QR code & Standee',
+                  '5 Responsive Menu Templates',
+                  'High-res food photography uploads',
+                  'FSSAI Veg, Non-Veg, Jain & Vegan badges',
+                  'Multi-language menu translations',
+                  'Up to 100 food items & 15 categories'
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -387,83 +545,64 @@ export const LandingPage: React.FC = () => {
                 setAuthMode('register');
                 setIsAuthModalOpen(true);
               }}
-              className="mt-8 w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition text-center"
+              className="mt-8 w-full py-3.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition text-center border border-slate-700"
             >
-              Get Started Free
+              Get Started with Basic
             </button>
           </div>
 
-          {/* PREMIUM PLAN */}
-          <div className="bg-gradient-to-b from-slate-900 to-slate-950 p-8 rounded-3xl border-2 border-emerald-500 shadow-2xl flex flex-col justify-between relative">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-full shadow-md">
-              Most Popular
+          {/* PREMIUM LUXURY PLAN */}
+          <div className="bg-gradient-to-b from-slate-900 to-slate-950 p-8 rounded-3xl border-2 border-amber-500 shadow-2xl flex flex-col justify-between relative ring-1 ring-amber-500/30">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-full shadow-md flex items-center gap-1">
+              <Crown className="w-3 h-3" />
+              <span>Most Popular &bull; Full Suite</span>
             </div>
 
             <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Premium Pro</span>
-              <h3 className="text-2xl font-bold text-white">Growth</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">
-                  ₹{billingCycle === 'yearly' ? premiumPlan?.yearly_price || 7990 : premiumPlan?.monthly_price || 799}
-                </span>
-                <span className="text-xs text-slate-400">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-400">All-Inclusive Luxury</span>
+              <h3 className="text-2xl font-bold text-white">{premiumPlan?.name || 'Premium Luxury Plan'}</h3>
+              
+              <div className="p-4 rounded-2xl bg-slate-950/90 border border-amber-500/30 space-y-2">
+                <div className="flex items-baseline justify-between pb-2 border-b border-slate-800">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Monthly Rate</span>
+                    <span className="text-2xl font-black text-white">₹{premiumPlan?.monthly_price || 999}</span>
+                    <span className="text-xs text-slate-400"> / month</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500">Billed monthly</span>
+                </div>
+
+                <div className="flex items-baseline justify-between pt-1">
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] uppercase font-bold text-amber-300 block">Yearly Rate</span>
+                      <span className="text-[9px] bg-amber-400 text-slate-950 font-black px-1 rounded">Save 25%</span>
+                    </div>
+                    <span className="text-2xl font-black text-amber-300">₹{Math.round((premiumPlan?.yearly_price || 8990) / 12)}</span>
+                    <span className="text-xs text-slate-400"> / mo</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-white block">₹{(premiumPlan?.yearly_price || 8990).toLocaleString('en-IN')}</span>
+                    <span className="text-[9px] text-slate-500 block">billed annually</span>
+                  </div>
+                </div>
               </div>
+
               <p className="text-xs text-slate-400">
-                High-converting visual menus with food photos and brand customization.
+                {premiumPlan?.description || 'The complete suite for high-volume restaurants, fine dining, and franchise brands.'}
               </p>
 
-              <div className="pt-6 border-t border-slate-800 space-y-2.5">
+              <div className="pt-4 border-t border-slate-800 space-y-2.5">
                 {[
-                  'All Free features included',
-                  'Access to 6 Premium Templates',
-                  'High-res food photography uploads',
-                  'Multi-language menu (Hindi, Marathi, etc.)',
-                  'Remove SmartQR SaaS branding',
-                  'Scan & engagement analytics'
+                  'Access to ALL 15 Luxury & Glassmorphism Templates',
+                  'Instant QR Scan Opening Intro Animation (Royal Glow & Particles)',
+                  'Custom QR Studio (Center Logo & Monogram Badges)',
+                  'Tabletop Ordering Cart & Instant UPI QR Payments',
+                  'Excel / CSV Bulk Menu Import & Instant Export',
+                  '100% White-Label: Remove all SmartQR SaaS branding',
+                  'Google 5-Star Review Booster & Waiter Notifications'
                 ].map((feat, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs text-slate-200">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>{feat}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                setAuthMode('register');
-                setIsAuthModalOpen(true);
-              }}
-              className="mt-8 w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/30 text-center"
-            >
-              Upgrade to Premium
-            </button>
-          </div>
-
-          {/* PREMIUM PLUS PLAN */}
-          <div className="bg-slate-900/60 p-8 rounded-3xl border border-amber-500/40 flex flex-col justify-between shadow-xl">
-            <div className="space-y-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Exclusive Luxury</span>
-              <h3 className="text-2xl font-bold text-white">Premium Plus</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-amber-300">
-                  ₹{billingCycle === 'yearly' ? premiumPlusPlan?.yearly_price || 19990 : premiumPlusPlan?.monthly_price || 1999}
-                </span>
-                <span className="text-xs text-slate-400">/{billingCycle === 'yearly' ? 'year' : 'month'}</span>
-              </div>
-              <p className="text-xs text-slate-400">
-                Bespoke luxury showcase for 5-star lounges, royal heritage diners & clubs.
-              </p>
-
-              <div className="pt-6 border-t border-slate-800 space-y-2.5">
-                {[
-                  'All Premium features included',
-                  'ALL 15 Templates (Black Gold, Royal Indian, Glass)',
-                  'Table-specific QR codes with table numbering',
-                  'Sommelier wine notes & tasting menus',
-                  'VIP 24/7 Priority support'
-                ].map((feat, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
                     <Check className="w-4 h-4 text-amber-400 flex-shrink-0" />
                     <span>{feat}</span>
                   </div>
@@ -476,9 +615,9 @@ export const LandingPage: React.FC = () => {
                 setAuthMode('register');
                 setIsAuthModalOpen(true);
               }}
-              className="mt-8 w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black transition text-center shadow-lg"
+              className="mt-8 w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black transition shadow-lg shadow-amber-500/25 text-center"
             >
-              Unlock Luxury Suite
+              Choose Premium Luxury
             </button>
           </div>
         </div>
@@ -531,14 +670,37 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">Password</label>
-                <input
-                  type="password"
-                  required
-                  defaultValue="Password123!"
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 bg-slate-950 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-emerald-500 font-mono"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-300">Password *</label>
+                  {password && (
+                    <button
+                      type="button"
+                      onClick={() => setPassword('')}
+                      className="text-[10px] text-slate-500 hover:text-slate-300"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={authMode === 'register' ? 'Create a secure password' : 'Enter your password'}
+                    autoComplete={authMode === 'register' ? 'new-password' : 'current-password'}
+                    className="w-full px-3.5 py-2.5 bg-slate-950 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-emerald-500 font-mono pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <button

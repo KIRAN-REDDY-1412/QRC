@@ -16,8 +16,11 @@ import {
   Upload, 
   FolderTree,
   Search,
-  Lock
+  Lock,
+  FileSpreadsheet,
+  Crown
 } from 'lucide-react';
+import { BulkMenuManagerModal } from '@/components/modals/BulkMenuManagerModal';
 
 export const MenuManagement: React.FC = () => {
   const { 
@@ -35,6 +38,7 @@ export const MenuManagement: React.FC = () => {
   } = useRestaurant();
 
   const { canAccessFeature, openUpgradeModal } = usePlan();
+  const canUseBulk = canAccessFeature('bulk_import');
 
   const [activeTab, setActiveTab] = useState<'items' | 'categories'>('items');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
@@ -43,6 +47,7 @@ export const MenuManagement: React.FC = () => {
   // Modals state
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
@@ -206,6 +211,15 @@ export const MenuManagement: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsBulkModalOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-700 text-xs font-bold transition flex items-center gap-1.5"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Bulk CSV / Excel</span>
+            <Crown className="w-3 h-3 text-amber-400" />
+          </button>
+
           {activeTab === 'items' ? (
             <button
               onClick={openNewItemModal}
@@ -666,6 +680,14 @@ export const MenuManagement: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+      {/* BULK CSV / EXCEL MODAL (PREMIUM PLUS) */}
+      {isBulkModalOpen && (
+        <BulkMenuManagerModal
+          isOpen={isBulkModalOpen}
+          onClose={() => setIsBulkModalOpen(false)}
+          restaurantId={currentRestaurant.id}
+        />
       )}
     </div>
   );

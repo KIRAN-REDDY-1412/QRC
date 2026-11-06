@@ -1,6 +1,6 @@
 export type UserRole = 'super_admin' | 'restaurant_owner' | 'customer';
 
-export type PlanCode = 'free' | 'premium' | 'premium_plus';
+export type PlanCode = 'basic' | 'premium' | 'free' | 'premium_plus';
 
 export type DietaryType = 'veg' | 'non_veg' | 'egg' | 'vegan' | 'jain';
 
@@ -33,6 +33,10 @@ export interface SubscriptionPlan {
   allow_multi_language: boolean;
   remove_saas_branding: boolean;
   allow_table_qr: boolean;
+  allow_ordering?: boolean;
+  allow_upi_payment?: boolean;
+  allow_bulk_import?: boolean;
+  allow_review_booster?: boolean;
   allowed_template_tiers: PlanCode[];
   created_at?: string;
   updated_at?: string;
@@ -57,6 +61,12 @@ export interface Restaurant {
   banner_url?: string;
   opening_time?: string;
   closing_time?: string;
+  whatsapp_number?: string;
+  upi_id?: string;
+  google_review_url?: string;
+  enable_ordering?: boolean;
+  enable_upi?: boolean;
+  enable_reviews?: boolean;
   is_active: boolean;
   is_pure_veg: boolean;
   created_at?: string;
@@ -106,6 +116,8 @@ export interface MenuTemplate {
   is_active: boolean;
 }
 
+export type OpeningAnimationStyle = 'minimal' | 'gold_glow' | 'luxury_particles' | 'cinematic';
+
 export interface RestaurantTemplateSettings {
   id?: string;
   restaurant_id: string;
@@ -118,6 +130,13 @@ export interface RestaurantTemplateSettings {
   show_spice_level: boolean;
   show_prices: boolean;
   custom_css?: string;
+  // Instant QR Scan Opening Animation Experience
+  opening_animation_enabled?: boolean;
+  opening_animation_style?: OpeningAnimationStyle;
+  opening_animation_duration?: number; // duration in seconds (1.0 to 2.5)
+  opening_animation_tagline?: string;
+  opening_animation_skip_button?: boolean;
+  opening_animation_sound?: boolean;
 }
 
 export interface Subscription {
@@ -184,4 +203,26 @@ export interface AnalyticsEvent {
   table_number?: string;
   metadata?: Record<string, any>;
   created_at?: string;
+}
+
+export interface CartItem {
+  item: MenuItem;
+  quantity: number;
+  notes?: string;
+}
+
+export interface CustomerOrder {
+  id: string;
+  restaurant_id: string;
+  table_number: string;
+  customer_name?: string;
+  customer_phone?: string;
+  items: CartItem[];
+  subtotal: number;
+  tax: number;
+  total_amount: number;
+  status: 'new' | 'in_kitchen' | 'ready' | 'completed' | 'cancelled';
+  payment_method?: 'cash' | 'upi' | 'card';
+  payment_status: 'pending' | 'paid';
+  created_at: string;
 }

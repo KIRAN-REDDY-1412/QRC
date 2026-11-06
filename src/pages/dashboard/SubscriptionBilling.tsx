@@ -32,9 +32,9 @@ export const SubscriptionBilling: React.FC = () => {
   if (!currentRestaurant) return null;
 
   const activePlan = currentSubscription?.plan || plans[0];
-  const isFree = activePlan.code === 'free';
-  const isPremium = activePlan.code === 'premium';
-  const isPremiumPlus = activePlan.code === 'premium_plus';
+  const isBasic = activePlan.code === 'basic' || activePlan.code === 'free';
+  const isPremium = activePlan.code === 'premium' || activePlan.code === 'premium_plus';
+  const displayPlans = plans.filter(p => p.code === 'basic' || p.code === 'premium');
 
   const startDateFormatted = currentSubscription?.current_period_start
     ? new Date(currentSubscription.current_period_start).toLocaleDateString('en-IN', {
@@ -80,25 +80,17 @@ export const SubscriptionBilling: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {isFree ? (
+          {isBasic ? (
             <button
               onClick={() => openUpgradeModal('premium')}
-              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/20 flex items-center gap-2"
-            >
-              <Crown className="w-4 h-4" />
-              <span>Upgrade to Premium</span>
-            </button>
-          ) : isPremium ? (
-            <button
-              onClick={() => openUpgradeModal('premium_plus')}
               className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black transition shadow-lg shadow-amber-500/20 flex items-center gap-2"
             >
               <Crown className="w-4 h-4" />
-              <span>Upgrade to Premium Plus Luxury</span>
+              <span>Upgrade to Premium Luxury</span>
             </button>
           ) : (
             <span className="px-4 py-2 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-1.5">
-              <Crown className="w-4 h-4" /> VIP Luxury Tier Active
+              <Crown className="w-4 h-4" /> Premium Luxury Active
             </span>
           )}
         </div>
@@ -109,10 +101,8 @@ export const SubscriptionBilling: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
           <div className="flex items-center gap-4">
             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold ${
-              isPremiumPlus 
+              isPremium 
                 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' 
-                : isFree 
-                ? 'bg-slate-800 text-slate-300' 
                 : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
             }`}>
               <Crown className="w-7 h-7" />
@@ -183,30 +173,132 @@ export const SubscriptionBilling: React.FC = () => {
         )}
 
         {/* Downgrade or Cancel Actions */}
-        {!isFree && (
+        {isPremium && (
           <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4">
             <div className="text-xs text-slate-400">
-              Need to switch tiers? Choose a downgrade or cancel auto-renewal.
+              Need to switch tiers? Switch to Basic Plan or manage renewal.
             </div>
 
             <div className="flex items-center gap-3">
-              {isPremiumPlus && (
-                <button
-                  onClick={() => handleTriggerDowngrade('premium')}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 transition"
-                >
-                  Downgrade to Premium
-                </button>
-              )}
               <button
-                onClick={() => handleTriggerDowngrade('free')}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-red-950/40 text-xs font-semibold text-slate-400 hover:text-red-400 border border-slate-800 transition"
+                onClick={() => handleTriggerDowngrade('basic')}
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white border border-slate-700 transition"
               >
-                Downgrade to Free
+                Downgrade to Basic Plan
               </button>
             </div>
           </div>
         )}
+      </div>
+
+      {/* BOTH PLANS IN ONE FRAME (MONTHLY & YEARLY) */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-base font-bold text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>Available Subscription Plans (Both Plans In One Frame)</span>
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Compare Basic and Premium Luxury tiers. Both monthly and yearly rates visible side-by-side.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {displayPlans.map(plan => {
+            const isPlanPremium = plan.code === 'premium';
+            const isCurrent = activePlan.code === plan.code;
+            const monthlyEquiv = Math.round(plan.yearly_price / 12);
+
+            return (
+              <div 
+                key={plan.id}
+                className={`p-6 rounded-3xl border flex flex-col justify-between relative ${
+                  isPlanPremium 
+                    ? 'bg-gradient-to-b from-slate-900 to-slate-950 border-amber-500/70 shadow-xl' 
+                    : 'bg-slate-950 border-slate-800 shadow-lg'
+                }`}
+              >
+                {isPlanPremium && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-widest rounded-full shadow-md flex items-center gap-1">
+                    <Crown className="w-3 h-3" />
+                    <span>Best Value &bull; All 15 Templates</span>
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-lg font-bold text-white">{plan.name}</h4>
+                    {isCurrent && (
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Current Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-400 mb-4">{plan.description}</p>
+
+                  {/* Dual Price Box */}
+                  <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 mb-4">
+                    <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800/80">
+                      <div>
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Monthly Billing</span>
+                        <span className="text-lg font-black text-white">₹{plan.monthly_price}</span>
+                        <span className="text-[10px] text-slate-400"> / month</span>
+                      </div>
+                      <span className="text-[10px] text-slate-500">Flexible 30 days</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-amber-400 block text-[10px] uppercase font-bold">Yearly Billing</span>
+                          <span className="text-[9px] bg-amber-400 text-slate-950 font-extrabold px-1 rounded">Save 25%</span>
+                        </div>
+                        <span className="text-lg font-black text-amber-300">₹{monthlyEquiv}</span>
+                        <span className="text-[10px] text-slate-400"> / mo</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-bold text-white text-xs block">₹{plan.yearly_price.toLocaleString('en-IN')}</span>
+                        <span className="text-[9px] text-slate-500 block">billed annually</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-6">
+                    {plan.features.slice(0, 6).map((feat, i) => (
+                      <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                        <Check className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${isPlanPremium ? 'text-amber-400' : 'text-emerald-400'}`} />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  {isCurrent ? (
+                    <button
+                      disabled
+                      className="w-full py-2.5 rounded-xl bg-slate-900 text-slate-400 text-xs font-bold border border-slate-800 text-center cursor-default"
+                    >
+                      Active Tier
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => openUpgradeModal(plan.code)}
+                      className={`w-full py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                        isPlanPremium
+                          ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                          : 'bg-slate-800 hover:bg-slate-700 text-white'
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Switch to {plan.name}</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Downgrade Modal Confirmation */}

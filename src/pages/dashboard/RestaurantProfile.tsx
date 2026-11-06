@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '@/context/RestaurantContext';
-import { Store, Save, Check, Upload, Image as ImageIcon, MapPin, Phone, Mail, ShieldCheck } from 'lucide-react';
+import { Store, Save, Check, Upload, Image as ImageIcon, MapPin, Phone, Mail, ShieldCheck, Crown, Lock, Smartphone, CreditCard, Star } from 'lucide-react';
+import { usePlan } from '@/context/PlanContext';
 
 export const RestaurantProfile: React.FC = () => {
   const { currentRestaurant, updateRestaurantProfile, uploadImage } = useRestaurant();
+  const { canAccessFeature, openUpgradeModal, currentSubscription } = usePlan();
 
   if (!currentRestaurant) return null;
+
+  const isPremiumPlus = currentSubscription?.plan?.code === 'premium_plus';
 
   const [name, setName] = useState(currentRestaurant.name);
   const [tagline, setTagline] = useState(currentRestaurant.tagline || '');
@@ -22,6 +26,9 @@ export const RestaurantProfile: React.FC = () => {
   const [isPureVeg, setIsPureVeg] = useState(currentRestaurant.is_pure_veg || false);
   const [logoUrl, setLogoUrl] = useState(currentRestaurant.logo_url || '');
   const [bannerUrl, setBannerUrl] = useState(currentRestaurant.banner_url || '');
+  const [whatsappNumber, setWhatsappNumber] = useState(currentRestaurant.whatsapp_number || '');
+  const [upiId, setUpiId] = useState(currentRestaurant.upi_id || '');
+  const [googleReviewUrl, setGoogleReviewUrl] = useState(currentRestaurant.google_review_url || '');
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,7 +48,10 @@ export const RestaurantProfile: React.FC = () => {
       closing_time: closingTime,
       is_pure_veg: isPureVeg,
       logo_url: logoUrl,
-      banner_url: bannerUrl
+      banner_url: bannerUrl,
+      whatsapp_number: whatsappNumber,
+      upi_id: upiId,
+      google_review_url: googleReviewUrl
     });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2500);
@@ -278,6 +288,93 @@ export const RestaurantProfile: React.FC = () => {
                 placeholder="400001"
                 className="w-full px-3.5 py-2.5 bg-slate-900 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-emerald-500 font-mono"
               />
+            </div>
+          </div>
+        </div>
+
+        {/* Premium Plus Dining Tools & Integrations */}
+        <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-amber-300">
+                Premium Plus Dining Tools & Integrations
+              </h2>
+            </div>
+            {!isPremiumPlus ? (
+              <button
+                type="button"
+                onClick={() => openUpgradeModal('premium_plus')}
+                className="text-[10px] text-amber-400 font-bold bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1 transition"
+              >
+                <Lock className="w-3 h-3" />
+                <span>Unlock with Premium Plus</span>
+              </button>
+            ) : (
+              <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1">
+                <Check className="w-3 h-3" />
+                <span>Active</span>
+              </span>
+            )}
+          </div>
+
+          <p className="text-xs text-slate-400">
+            Configure automated WhatsApp order dispatch, Tabletop UPI QR payment, and Google Maps Review booster.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-300 block mb-1">
+                WhatsApp Order Dispatch Number
+              </label>
+              <div className="relative">
+                <Smartphone className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  disabled={!isPremiumPlus}
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="+91 98200 12345"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-900 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 font-mono disabled:opacity-50"
+                />
+              </div>
+              <span className="text-[10px] text-slate-500 mt-1 block">Diners send cart orders to this WhatsApp</span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-300 block mb-1">
+                Restaurant UPI ID (GPay / PhonePe)
+              </label>
+              <div className="relative">
+                <CreditCard className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  disabled={!isPremiumPlus}
+                  value={upiId}
+                  onChange={(e) => setUpiId(e.target.value)}
+                  placeholder="restaurant@okaxis"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-900 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 font-mono disabled:opacity-50"
+                />
+              </div>
+              <span className="text-[10px] text-slate-500 mt-1 block">Dynamic tabletop scan-and-pay UPI QR</span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-300 block mb-1">
+                Google Maps Review Link
+              </label>
+              <div className="relative">
+                <Star className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  disabled={!isPremiumPlus}
+                  value={googleReviewUrl}
+                  onChange={(e) => setGoogleReviewUrl(e.target.value)}
+                  placeholder="https://g.page/r/.../review"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-900 text-white text-xs rounded-xl border border-slate-700 focus:outline-none focus:border-amber-500 disabled:opacity-50"
+                />
+              </div>
+              <span className="text-[10px] text-slate-500 mt-1 block">Direct link to 5-star Google review form</span>
             </div>
           </div>
         </div>

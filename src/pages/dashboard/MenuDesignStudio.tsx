@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useRestaurant } from '@/context/RestaurantContext';
 import { usePlan } from '@/context/PlanContext';
 import { TemplateRenderer } from '@/templates/TemplateRenderer';
+import { OpeningExperienceOverlay } from '@/components/menu/OpeningExperienceOverlay';
+import { OpeningAnimationStyle } from '@/types';
 import { 
   Palette, 
   Smartphone, 
@@ -11,7 +13,12 @@ import {
   Lock, 
   Save, 
   Check, 
-  Sliders
+  Sliders,
+  Play,
+  Volume2,
+  Clock,
+  Crown,
+  Eye
 } from 'lucide-react';
 
 export const MenuDesignStudio: React.FC = () => {
@@ -33,11 +40,25 @@ export const MenuDesignStudio: React.FC = () => {
   const [showSpiceLevel, setShowSpiceLevel] = useState(templateSettings.show_spice_level ?? true);
   const [isSavedNotice, setIsSavedNotice] = useState(false);
 
+  // Instant Opening Animation Experience State
+  const [openingEnabled, setOpeningEnabled] = useState<boolean>(templateSettings.opening_animation_enabled ?? true);
+  const [openingStyle, setOpeningStyle] = useState<OpeningAnimationStyle>(templateSettings.opening_animation_style || 'gold_glow');
+  const [openingDuration, setOpeningDuration] = useState<number>(templateSettings.opening_animation_duration || 1.8);
+  const [openingTagline, setOpeningTagline] = useState<string>(templateSettings.opening_animation_tagline || currentRestaurant?.tagline || '');
+  const [openingSkipButton, setOpeningSkipButton] = useState<boolean>(templateSettings.opening_animation_skip_button ?? true);
+  const [openingSound, setOpeningSound] = useState<boolean>(templateSettings.opening_animation_sound ?? false);
+
+  // Live Phone Simulator Overlay Preview
+  const [isPreviewingOpening, setIsPreviewingOpening] = useState<boolean>(false);
+
   if (!currentRestaurant) return null;
 
   const currentTemplate = templates.find(t => t.id === templateSettings.template_id) || templates[0];
   const canCustomColors = canAccessFeature('custom_branding');
   const canCustomFonts = canAccessFeature('custom_branding');
+
+  const planCode = currentSubscription?.plan?.code || 'basic';
+  const isPremium = planCode === 'premium' || planCode === 'premium_plus';
 
   const handleSaveSettings = () => {
     updateTemplateSettings({
@@ -45,7 +66,13 @@ export const MenuDesignStudio: React.FC = () => {
       font_family: fontFamily,
       show_photos: showPhotos,
       show_dietary_badges: showDietaryBadges,
-      show_spice_level: showSpiceLevel
+      show_spice_level: showSpiceLevel,
+      opening_animation_enabled: openingEnabled,
+      opening_animation_style: openingStyle,
+      opening_animation_duration: openingDuration,
+      opening_animation_tagline: openingTagline,
+      opening_animation_skip_button: openingSkipButton,
+      opening_animation_sound: openingSound
     });
     setIsSavedNotice(true);
     setTimeout(() => setIsSavedNotice(false), 2500);
@@ -234,6 +261,162 @@ export const MenuDesignStudio: React.FC = () => {
               </label>
             </div>
           </div>
+
+          {/* Instant QR Scan Opening Experience Card */}
+          <div className="bg-slate-950 p-6 rounded-3xl border border-amber-500/30 space-y-5 shadow-xl relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  Instant QR Opening Intro
+                </span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox"
+                  checked={openingEnabled}
+                  onChange={(e) => setOpeningEnabled(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed font-light">
+              Automatically reveals your restaurant logo, name, and luxury ambiance animation when diners scan your tabletop QR standees.
+            </p>
+
+            {openingEnabled && (
+              <div className="space-y-4 pt-2 border-t border-slate-800">
+                {/* Style Picker */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                    Animation Effect Style
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'minimal', name: 'Minimal Zoom', badge: 'Basic', tier: 'basic' },
+                      { id: 'gold_glow', name: 'Gold Radiant Aura', badge: 'Premium', tier: 'premium' },
+                      { id: 'luxury_particles', name: 'Luxury Shimmer', badge: 'Premium', tier: 'premium' },
+                      { id: 'cinematic', name: 'Cinematic Flare', badge: 'Premium', tier: 'premium' }
+                    ].map(style => {
+                      const isLocked = style.tier === 'premium' ? !isPremium : false;
+                      const isSelected = openingStyle === style.id;
+                      return (
+                        <button
+                          key={style.id}
+                          type="button"
+                          onClick={() => {
+                            if (isLocked) {
+                              openUpgradeModal('premium');
+                              return;
+                            }
+                            setOpeningStyle(style.id as OpeningAnimationStyle);
+                          }}
+                          className={`p-3 rounded-2xl border text-left transition relative ${
+                            isSelected 
+                              ? 'bg-amber-500/10 border-amber-500 text-white shadow-md shadow-amber-500/10' 
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-white">{style.name}</span>
+                            {isLocked ? (
+                              <Lock className="w-3 h-3 text-amber-400" />
+                            ) : isSelected ? (
+                              <Check className="w-3.5 h-3.5 text-amber-400" />
+                            ) : null}
+                          </div>
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                            style.tier === 'basic' ? 'bg-slate-800 text-slate-400' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {style.badge}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Duration Slider */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-[11px] font-bold text-slate-300">
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Intro Duration</span>
+                    </span>
+                    <span className="font-mono text-amber-400">{openingDuration}s</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1.0"
+                    max="2.5"
+                    step="0.1"
+                    value={openingDuration}
+                    onChange={(e) => setOpeningDuration(parseFloat(e.target.value))}
+                    className="w-full accent-amber-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[9px] text-slate-500 font-mono">
+                    <span>1.0s (Fast)</span>
+                    <span>1.8s (Balanced)</span>
+                    <span>2.5s (Cinematic)</span>
+                  </div>
+                </div>
+
+                {/* Welcome Tagline Input */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-300 block">
+                    Welcome Subtitle / Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={openingTagline}
+                    onChange={(e) => setOpeningTagline(e.target.value)}
+                    placeholder="e.g. Crafted With Passion & Culinary Excellence"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {/* Skip Button Toggle */}
+                <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer">
+                  <span className="text-xs text-slate-300 font-medium">Show "Skip Intro" Button</span>
+                  <input
+                    type="checkbox"
+                    checked={openingSkipButton}
+                    onChange={(e) => setOpeningSkipButton(e.target.checked)}
+                    className="w-4 h-4 rounded text-amber-500 accent-amber-500"
+                  />
+                </label>
+
+                {/* Sound Chime Toggle */}
+                <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer">
+                  <div className="space-y-0.5">
+                    <span className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Shimmer Sound Chime</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500 block">Synthesized subtle chord on load</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={openingSound}
+                    onChange={(e) => setOpeningSound(e.target.checked)}
+                    className="w-4 h-4 rounded text-amber-500 accent-amber-500"
+                  />
+                </label>
+
+                {/* Test Preview Button in Form */}
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewingOpening(true)}
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                >
+                  <Play className="w-3.5 h-3.5 fill-slate-950" />
+                  <span>Test Opening Animation Now</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Live Smartphone Preview Column */}
@@ -243,13 +426,42 @@ export const MenuDesignStudio: React.FC = () => {
               <Smartphone className="w-4 h-4 text-emerald-400" />
               <span>LIVE INTERACTIVE PHONE SIMULATOR</span>
             </span>
-            <span className="text-[10px] text-emerald-400 font-bold">REALTIME RENDERING</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPreviewingOpening(true)}
+                className="px-3 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 text-[11px] font-bold flex items-center gap-1.5 transition active:scale-95"
+              >
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>Replay Opening</span>
+              </button>
+              <span className="text-[10px] text-emerald-400 font-bold">REALTIME</span>
+            </div>
           </div>
 
           {/* Device Mockup Shell */}
           <div className="w-full max-w-[390px] h-[720px] bg-slate-950 rounded-[48px] border-[6px] border-slate-800 shadow-2xl overflow-y-auto relative no-scrollbar">
+            
+            {/* Opening Animation Overlay inside the phone simulator */}
+            {isPreviewingOpening && (
+              <OpeningExperienceOverlay
+                restaurant={{
+                  ...currentRestaurant,
+                  tagline: openingTagline || currentRestaurant.tagline
+                }}
+                animationStyle={openingStyle}
+                duration={openingDuration}
+                tagline={openingTagline}
+                showSkipButton={openingSkipButton}
+                soundEnabled={openingSound}
+                tableLabel="Table 4"
+                isPreview={true}
+                onComplete={() => setIsPreviewingOpening(false)}
+              />
+            )}
+
             {/* Phone Notch / Speaker */}
-            <div className="sticky top-0 z-50 w-full bg-slate-950 py-1.5 flex justify-center">
+            <div className="sticky top-0 z-40 w-full bg-slate-950 py-1.5 flex justify-center">
               <div className="w-24 h-4 bg-slate-800 rounded-full" />
             </div>
 

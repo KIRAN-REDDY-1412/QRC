@@ -27,16 +27,18 @@ export const TemplateMarketplace: React.FC = () => {
 
   const { canAccessTemplate, openUpgradeModal, currentSubscription } = usePlan();
 
-  const [activeTierFilter, setActiveTierFilter] = useState<'all' | PlanCode>('all');
+  const [activeTierFilter, setActiveTierFilter] = useState<'all' | 'basic' | 'premium'>('all');
   const [previewTemplate, setPreviewTemplate] = useState<MenuTemplate | null>(null);
 
   if (!currentRestaurant) return null;
 
-  const currentPlanCode = currentSubscription?.plan?.code || 'free';
+  const currentPlanCode = currentSubscription?.plan?.code || 'basic';
 
   const filteredTemplates = templates.filter(tpl => {
     if (activeTierFilter === 'all') return true;
-    return tpl.tier === activeTierFilter;
+    if (activeTierFilter === 'basic') return tpl.tier === 'basic' || tpl.tier === 'free';
+    if (activeTierFilter === 'premium') return tpl.tier === 'premium' || tpl.tier === 'premium_plus';
+    return true;
   });
 
   const handleApplyTemplate = (tpl: MenuTemplate) => {
@@ -80,9 +82,8 @@ export const TemplateMarketplace: React.FC = () => {
       <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
         {[
           { key: 'all', label: 'All 15 Templates' },
-          { key: 'free', label: 'Free Templates (3)' },
-          { key: 'premium', label: 'Premium Templates (6)' },
-          { key: 'premium_plus', label: 'Premium Plus Luxury (6)' }
+          { key: 'basic', label: 'Basic Templates' },
+          { key: 'premium', label: 'Premium Luxury Templates' }
         ].map((tab) => (
           <button
             key={tab.key}

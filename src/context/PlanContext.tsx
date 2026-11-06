@@ -21,7 +21,7 @@ interface PlanContextType {
   closeUpgradeModal: () => void;
   updatePlanPricing: (planId: string, updates: Partial<SubscriptionPlan>) => void;
   canAccessTemplate: (templateTier: PlanCode) => boolean;
-  canAccessFeature: (featureKey: 'food_images' | 'custom_branding' | 'multi_language' | 'table_qr' | 'analytics') => boolean;
+  canAccessFeature: (featureKey: 'food_images' | 'custom_branding' | 'multi_language' | 'table_qr' | 'analytics' | 'custom_qr_logo' | 'ordering' | 'upi_payment' | 'bulk_import' | 'review_booster') => boolean;
   upgradeSubscription: (targetPlanCode: PlanCode, cycle: 'monthly' | 'yearly', paymentDetails?: Partial<PaymentRecord>) => Promise<boolean>;
   scheduleDowngrade: (targetPlanCode: PlanCode) => void;
   cancelSubscription: () => void;
@@ -73,15 +73,14 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
     }
   };
 
-  // Hierarchy check: free < premium < premium_plus
+  // Hierarchy check: basic (all standard) < premium (all 15 luxury templates)
   const canAccessTemplate = (templateTier: PlanCode): boolean => {
-    const currentPlanCode = currentSubscription?.plan?.code || 'free';
-    if (currentPlanCode === 'premium_plus') return true;
-    if (currentPlanCode === 'premium') return templateTier === 'free' || templateTier === 'premium';
-    return templateTier === 'free';
+    const currentPlanCode = currentSubscription?.plan?.code || 'basic';
+    if (currentPlanCode === 'premium' || currentPlanCode === 'premium_plus') return true;
+    return templateTier === 'basic' || templateTier === 'free';
   };
 
-  const canAccessFeature = (featureKey: 'food_images' | 'custom_branding' | 'multi_language' | 'table_qr' | 'analytics'): boolean => {
+  const canAccessFeature = (featureKey: 'food_images' | 'custom_branding' | 'multi_language' | 'table_qr' | 'analytics' | 'custom_qr_logo' | 'ordering' | 'upi_payment' | 'bulk_import' | 'review_booster'): boolean => {
     const plan = currentSubscription?.plan;
     if (!plan) return false;
     switch (featureKey) {
@@ -94,7 +93,13 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
       case 'table_qr':
         return plan.allow_table_qr;
       case 'analytics':
-        return plan.code !== 'free';
+        return true;
+      case 'custom_qr_logo':
+      case 'ordering':
+      case 'upi_payment':
+      case 'bulk_import':
+      case 'review_booster':
+        return plan.code === 'premium' || plan.code === 'premium_plus';
       default:
         return false;
     }
@@ -174,11 +179,11 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
 
   const cancelSubscription = () => {
     if (!currentSubscription) return;
-    const freePlan = plans.find(p => p.code === 'free') || DEFAULT_PLANS[0];
+    const basicPlan = plans.find(p => p.code === 'basic') || DEFAULT_PLANS[0];
     const updatedSub: Subscription = {
       ...currentSubscription,
       status: 'downgrade_scheduled',
-      scheduled_downgrade_plan_id: freePlan.id,
+      scheduled_downgrade_plan_id: basicPlan.id,
       auto_renew: false
     };
     saveStoredSubscription(updatedSub);

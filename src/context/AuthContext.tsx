@@ -11,6 +11,7 @@ interface AuthContextType {
   register: (email: string, fullName: string, role?: UserRole) => Promise<void>;
   logout: () => Promise<void>;
   switchRole: (newRole: UserRole) => void;
+  changePassword: (newPassword: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,6 +103,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const changePassword = async (newPassword: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      if (isLiveSupabase) {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+          console.warn('Supabase password update error:', error.message);
+        }
+      }
+      if (user?.email) {
+        localStorage.setItem(`smartqr_owner_password_${user.email.toLowerCase()}`, newPassword);
+      }
+      return true;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const switchRole = (newRole: UserRole) => {
     setUser(DEMO_USERS[newRole]);
   };
@@ -116,7 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
-        switchRole
+        switchRole,
+        changePassword
       }}
     >
       {children}
