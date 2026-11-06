@@ -251,35 +251,46 @@ ALTER TABLE public.restaurant_tables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customer_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
 
+-- Helper function to check super admin safely without RLS recursion
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+  SELECT COALESCE(
+    (SELECT role = 'super_admin' FROM public.profiles WHERE id = auth.uid()),
+    false
+  );
+$$;
+
 -- Profiles
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Super admins can view all profiles" ON public.profiles FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-);
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Super admins can manage all profiles" ON public.profiles FOR ALL USING (public.is_super_admin());
 
 -- Plans (Public read; Super Admin write)
 CREATE POLICY "Anyone can view active subscription plans" ON public.subscription_plans FOR SELECT USING (true);
-CREATE POLICY "Super admins can manage plans" ON public.subscription_plans FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-);
+CREATE POLICY "Super admins can manage plans" ON public.subscription_plans FOR ALL USING (public.is_super_admin());
 
 -- Restaurants (Public read active for customer menu; Owner manage own)
 CREATE POLICY "Public can view active restaurants" ON public.restaurants FOR SELECT USING (is_active = true);
-CREATE POLICY "Owners can manage own restaurants" ON public.restaurants FOR ALL USING (owner_id = auth.uid());
-CREATE POLICY "Super admins can manage all restaurants" ON public.restaurants FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-);
+CREATE POLICY "Owners can manage own restaurants" ON public.restaurants FOR ALL USING (owner_id = auth.uid()) WITH CHECK (owner_id = auth.uid());
+CREATE POLICY "Super admins can manage all restaurants" ON public.restaurants FOR ALL USING (public.is_super_admin());
 
 -- Categories & Items (Public read; Owner manage)
 CREATE POLICY "Public can view active categories" ON public.menu_categories FOR SELECT USING (is_active = true);
 CREATE POLICY "Owners can manage categories" ON public.menu_categories FOR ALL USING (
     EXISTS (SELECT 1 FROM public.restaurants WHERE id = menu_categories.restaurant_id AND owner_id = auth.uid())
+    OR public.is_super_admin()
 );
 
 CREATE POLICY "Public can view menu items" ON public.menu_items FOR SELECT USING (true);
 CREATE POLICY "Owners can manage items" ON public.menu_items FOR ALL USING (
     EXISTS (SELECT 1 FROM public.restaurants WHERE id = menu_items.restaurant_id AND owner_id = auth.uid())
+    OR public.is_super_admin()
 );
 
 -- Templates (Public read)
@@ -289,12 +300,14 @@ CREATE POLICY "Anyone can view active templates" ON public.menu_templates FOR SE
 CREATE POLICY "Public can view template settings" ON public.restaurant_template_settings FOR SELECT USING (true);
 CREATE POLICY "Owners can update template settings" ON public.restaurant_template_settings FOR ALL USING (
     EXISTS (SELECT 1 FROM public.restaurants WHERE id = restaurant_template_settings.restaurant_id AND owner_id = auth.uid())
+    OR public.is_super_admin()
 );
 
 -- Tables
 CREATE POLICY "Public can view restaurant tables" ON public.restaurant_tables FOR SELECT USING (true);
 CREATE POLICY "Owners can manage tables" ON public.restaurant_tables FOR ALL USING (
     EXISTS (SELECT 1 FROM public.restaurants WHERE id = restaurant_tables.restaurant_id AND owner_id = auth.uid())
+    OR public.is_super_admin()
 );
 
 -- Customer Orders

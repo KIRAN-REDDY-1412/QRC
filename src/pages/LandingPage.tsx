@@ -22,6 +22,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { ALL_TEMPLATES } from '@/lib/supabase';
+import { useRestaurant } from '@/context/RestaurantContext';
 import { LandingPageMasterpiece } from './LandingPageMasterpiece';
 import { ConceptSensoryLuxury } from './landing/ConceptSensoryLuxury';
 import { ConceptMotionLive } from './landing/ConceptMotionLive';
@@ -32,6 +33,7 @@ import { ConceptKitchenPulse } from './landing/ConceptKitchenPulse';
 export const LandingPage: React.FC = () => {
   const { plans } = usePlan();
   const { login, register, isAuthenticated } = useAuth();
+  const { addRestaurant } = useRestaurant();
   const navigate = useNavigate();
 
   const [activeConcept, setActiveConcept] = useState<'masterpiece' | 'sensory' | 'live' | 'cyber' | 'royal' | 'kitchen' | 'classic'>('masterpiece');
@@ -53,6 +55,32 @@ export const LandingPage: React.FC = () => {
 
     if (authMode === 'register') {
       await register(email, name || 'Restaurant Owner');
+      const restName = name.trim() || 'My Restaurant';
+      const cleanSlug = restName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `restaurant-${Date.now()}`;
+      addRestaurant({
+        name: restName,
+        slug: cleanSlug,
+        tagline: 'Authentic Dining & Crafted Menus',
+        description: 'Welcome to our digital menu. Explore freshly prepared culinary specials and order right from your table.',
+        phone: '+91 98765 43210',
+        email: email.trim(),
+        address: 'Main Street, City Center',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        pincode: '400001',
+        currency: 'INR',
+        logo_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
+        banner_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        opening_time: '11:00 AM',
+        closing_time: '11:00 PM',
+        whatsapp_number: '919876543210',
+        upi_id: `${cleanSlug}@upi`,
+        enable_ordering: true,
+        enable_upi: true,
+        enable_reviews: true,
+        is_active: true,
+        is_pure_veg: false,
+      });
     } else {
       await login(email);
     }

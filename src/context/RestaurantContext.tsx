@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { 
   Restaurant, 
   MenuCategory, 
@@ -16,14 +16,17 @@ import {
   saveStoredCategories,
   getStoredItems, 
   getAllStoredItems,
-  saveStoredItems,
+  saveStoredItems, 
   getStoredSettings, 
   saveStoredSettings,
   ALL_TEMPLATES,
   DEMO_RESTAURANTS,
   DEMO_CATEGORIES,
-  DEMO_ITEMS
+  DEMO_ITEMS,
+  isLiveSupabase,
+  supabase
 } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 interface RestaurantContextType {
   restaurants: Restaurant[];
@@ -38,7 +41,7 @@ interface RestaurantContextType {
   // Super Admin & Multi-restaurant operations
   updateRestaurantById: (restaurantId: string, updates: Partial<Restaurant>) => void;
   toggleRestaurantActive: (restaurantId: string) => void;
-  addRestaurant: (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at'>) => Restaurant;
+  addRestaurant: (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at' | 'owner_id'> & { owner_id?: string }) => Restaurant;
   getRestaurantCategories: (restaurantId: string) => MenuCategory[];
   getRestaurantItems: (restaurantId: string) => MenuItem[];
   getRestaurantSettings: (restaurantId: string) => RestaurantTemplateSettings;
@@ -73,16 +76,234 @@ interface RestaurantContextType {
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
 
 export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>(() => getStoredRestaurants());
+  const { user } = useAuth();
+  const [allRestaurants, setAllRestaurants] = useState<Restaurant[]>(() => getStoredRestaurants());
+
+  // Determine if active user is super admin
+  const isSuperAdmin = user?.role === 'super_admin';
+
+  // Strict Owner Isolation:
+  // - Super Admin sees ALL restaurants across the SaaS platform
+  // - Restaurant Owner sees ONLY their own restaurant(s)
+  const visibleRestaurants = useMemo(() => {
+    if (!user) return allRestaurants;
+    if (isSuperAdmin) return allRestaurants;
+    return allRestaurants.filter(r => 
+      (r.owner_id && r.owner_id === user.id) || 
+      (r.email && user.email && r.email.toLowerCase() === user.email.toLowerCase())
+    );
+  }, [allRestaurants, user, isSuperAdmin]);
+
   const [currentRestaurant, setCurrentRestaurantState] = useState<Restaurant | null>(() => {
-    const list = getStoredRestaurants();
-    return list.length > 0 ? list[0] : DEMO_RESTAURANTS[0];
+    return visibleRestaurants.length > 0 ? visibleRestaurants[0] : (allRestaurants[0] || null);
   });
+
+  // Keep owner restaurants isolated and auto-provision newly registered owners
+  useEffect(() => {
+    if (!user) return;
+
+    if (isSuperAdmin) {
+      if (!currentRestaurant && allRestaurants.length > 0) {
+        setCurrentRestaurantState(allRestaurants[0]);
+      }
+      return;
+    }
+
+    const matching = allRestaurants.filter(r => 
+      (r.owner_id && r.owner_id === user.id) || 
+      (r.email && user.email && r.email.toLowerCase() === user.email.toLowerCase())
+    );
+
+    if (matching.length === 0) {
+      // Newly registered owner has no restaurant in storage yet - provision their own!
+      const restName = user.full_name?.includes('(') 
+        ? user.full_name.split('(')[0].trim() 
+        : (user.full_name || 'My Restaurant');
+      const cleanSlug = restName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `restaurant-${Date.now()}`;
+      
+      const newOwnerRest: Restaurant = {
+        id: `rest-${Date.now()}`,
+        owner_id: user.id,
+        name: restName,
+        slug: cleanSlug,
+        tagline: 'Authentic Dining & Crafted Menus',
+        description: 'Welcome to our digital menu. Explore freshly prepared culinary specials and order right from your table.',
+        phone: user.phone || '+91 98765 43210',
+        email: user.email,
+        address: 'Main Street, City Center',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        pincode: '400001',
+        currency: 'INR',
+        logo_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
+        banner_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        opening_time: '11:00 AM',
+        closing_time: '11:00 PM',
+        whatsapp_number: user.phone ? user.phone.replace(/[^0-9]/g, '') : '919876543210',
+        upi_id: `${cleanSlug}@upi`,
+        enable_ordering: true,
+        enable_upi: true,
+        enable_reviews: true,
+        is_active: true,
+        is_pure_veg: false,
+        created_at: new Date().toISOString()
+      };
+
+      // Seed starter categories for this new restaurant
+      const starterCats: MenuCategory[] = [
+        {
+          id: `cat-${newOwnerRest.id}-1`,
+          restaurant_id: newOwnerRest.id,
+          name: "Chef's Specials",
+          description: 'Signature dishes crafted fresh daily',
+          icon: 'Sparkles',
+          order_index: 1,
+          is_active: true
+        },
+        {
+          id: `cat-${newOwnerRest.id}-2`,
+          restaurant_id: newOwnerRest.id,
+          name: 'Main Courses',
+          description: 'Aromatic flavors served with classic sides',
+          icon: 'Utensils',
+          order_index: 2,
+          is_active: true
+        },
+        {
+          id: `cat-${newOwnerRest.id}-3`,
+          restaurant_id: newOwnerRest.id,
+          name: 'Beverages & Coolers',
+          description: 'Refreshing juices and chilled infusions',
+          icon: 'Coffee',
+          order_index: 3,
+          is_active: true
+        }
+      ];
+
+      // Seed starter items
+      const starterItems: MenuItem[] = [
+        {
+          id: `item-${newOwnerRest.id}-1`,
+          restaurant_id: newOwnerRest.id,
+          category_id: starterCats[0].id,
+          name: 'Signature House Platter',
+          description: 'Crisp hand-tossed delicacies seasoned with aromatic herbs and house dip.',
+          price: 349,
+          image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
+          is_available: true,
+          is_featured: true,
+          dietary_type: 'veg',
+          spice_level: 1,
+          order_index: 1
+        },
+        {
+          id: `item-${newOwnerRest.id}-2`,
+          restaurant_id: newOwnerRest.id,
+          category_id: starterCats[1].id,
+          name: 'Classic Dum Biryani',
+          description: 'Slow cooked long-grain rice with rich spices and fresh mint.',
+          price: 449,
+          image_url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80',
+          is_available: true,
+          is_featured: true,
+          dietary_type: 'non_veg',
+          spice_level: 2,
+          order_index: 1
+        },
+        {
+          id: `item-${newOwnerRest.id}-3`,
+          restaurant_id: newOwnerRest.id,
+          category_id: starterCats[2].id,
+          name: 'Fresh Mint Lime Cooler',
+          description: 'Crushed mint, fresh lime juice and sparkling soda.',
+          price: 149,
+          image_url: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80',
+          is_available: true,
+          is_featured: false,
+          dietary_type: 'vegan',
+          spice_level: 0,
+          order_index: 1
+        }
+      ];
+
+      const allCats = getAllStoredCategories();
+      saveStoredCategories([...allCats, ...starterCats]);
+
+      const allItms = getAllStoredItems();
+      saveStoredItems([...allItms, ...starterItems]);
+
+      const updated = [newOwnerRest, ...allRestaurants];
+      setAllRestaurants(updated);
+      saveStoredRestaurants(updated);
+      setCurrentRestaurantState(newOwnerRest);
+
+      if (isLiveSupabase) {
+        supabase.from('restaurants').upsert({
+          id: newOwnerRest.id,
+          owner_id: user.id,
+          name: newOwnerRest.name,
+          slug: newOwnerRest.slug,
+          tagline: newOwnerRest.tagline,
+          description: newOwnerRest.description,
+          phone: newOwnerRest.phone,
+          email: newOwnerRest.email,
+          city: newOwnerRest.city,
+          state: newOwnerRest.state,
+          currency: newOwnerRest.currency,
+          logo_url: newOwnerRest.logo_url,
+          banner_url: newOwnerRest.banner_url,
+          opening_time: newOwnerRest.opening_time,
+          closing_time: newOwnerRest.closing_time,
+          whatsapp_number: newOwnerRest.whatsapp_number,
+          upi_id: newOwnerRest.upi_id,
+          enable_ordering: newOwnerRest.enable_ordering,
+          enable_upi: newOwnerRest.enable_upi,
+          enable_reviews: newOwnerRest.enable_reviews,
+          is_active: newOwnerRest.is_active
+        }).then(({ error }) => {
+          if (error) console.warn('Supabase restaurant upsert error:', error.message);
+        });
+      }
+    } else {
+      // Ensure currentRestaurant belongs to this owner!
+      const currentBelongsToUser = currentRestaurant && matching.some(r => r.id === currentRestaurant.id);
+      if (!currentBelongsToUser) {
+        setCurrentRestaurantState(matching[0]);
+      }
+    }
+  }, [user?.id, user?.email, user?.role, allRestaurants]);
+
+  // Sync from Supabase on mount / auth
+  useEffect(() => {
+    if (!isLiveSupabase || !user) return;
+    const fetchFromSupabase = async () => {
+      try {
+        let query = supabase.from('restaurants').select('*');
+        if (!isSuperAdmin) {
+          query = query.eq('owner_id', user.id);
+        }
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          setAllRestaurants(prev => {
+            const map = new Map<string, Restaurant>();
+            prev.forEach(r => map.set(r.id, r));
+            data.forEach((r: any) => map.set(r.id, r as Restaurant));
+            const merged = Array.from(map.values());
+            saveStoredRestaurants(merged);
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase restaurant fetch notice:', err);
+      }
+    };
+    fetchFromSupabase();
+  }, [user?.id, isLiveSupabase, isSuperAdmin]);
 
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [templateSettings, setTemplateSettings] = useState<RestaurantTemplateSettings>(() => {
-    const restId = currentRestaurant?.id || DEMO_RESTAURANTS[0].id;
+    const restId = currentRestaurant?.id || (visibleRestaurants[0]?.id || DEMO_RESTAURANTS[0].id);
     return getStoredSettings(restId);
   });
   const [templates] = useState<MenuTemplate[]>(ALL_TEMPLATES);
@@ -123,37 +344,58 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!currentRestaurant) return;
     const updated: Restaurant = { ...currentRestaurant, ...updates, updated_at: new Date().toISOString() };
     setCurrentRestaurantState(updated);
-    const all = restaurants.map(r => r.id === updated.id ? updated : r);
-    setRestaurants(all);
+    const all = allRestaurants.map(r => r.id === updated.id ? updated : r);
+    setAllRestaurants(all);
     saveStoredRestaurants(all);
+
+    if (isLiveSupabase) {
+      supabase.from('restaurants').update(updates).eq('id', updated.id).then(({ error }) => {
+        if (error) console.warn('Supabase update error:', error.message);
+      });
+    }
   };
 
   // Super Admin & Multi-restaurant operations
   const updateRestaurantById = (restaurantId: string, updates: Partial<Restaurant>) => {
-    const all = restaurants.map(r => r.id === restaurantId ? { ...r, ...updates, updated_at: new Date().toISOString() } : r);
-    setRestaurants(all);
+    const all = allRestaurants.map(r => r.id === restaurantId ? { ...r, ...updates, updated_at: new Date().toISOString() } : r);
+    setAllRestaurants(all);
     saveStoredRestaurants(all);
     if (currentRestaurant?.id === restaurantId) {
       setCurrentRestaurantState(prev => prev ? { ...prev, ...updates, updated_at: new Date().toISOString() } : null);
     }
+    if (isLiveSupabase) {
+      supabase.from('restaurants').update(updates).eq('id', restaurantId).then(({ error }) => {
+        if (error) console.warn('Supabase updateById error:', error.message);
+      });
+    }
   };
 
   const toggleRestaurantActive = (restaurantId: string) => {
-    const target = restaurants.find(r => r.id === restaurantId);
+    const target = allRestaurants.find(r => r.id === restaurantId);
     if (!target) return;
     updateRestaurantById(restaurantId, { is_active: !target.is_active });
   };
 
-  const addRestaurant = (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at'>): Restaurant => {
+  const addRestaurant = (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at' | 'owner_id'> & { owner_id?: string }): Restaurant => {
     const newRest: Restaurant = {
       ...restaurantData,
+      owner_id: restaurantData.owner_id || user?.id || `user-${Date.now()}`,
+      email: restaurantData.email || user?.email || '',
       id: `rest-${Date.now()}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    const all = [newRest, ...restaurants];
-    setRestaurants(all);
+    const all = [newRest, ...allRestaurants];
+    setAllRestaurants(all);
     saveStoredRestaurants(all);
+    setCurrentRestaurantState(newRest);
+
+    if (isLiveSupabase) {
+      supabase.from('restaurants').insert(newRest).then(({ error }) => {
+        if (error) console.warn('Supabase addRestaurant insert notice:', error.message);
+      });
+    }
+
     return newRest;
   };
 
@@ -277,7 +519,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
     const updated = [...categories, newCat];
     setCategories(updated);
-    // Persist all categories across restaurants
     const allStored = localStorage.getItem('smartqr_categories');
     const fullList: MenuCategory[] = allStored ? JSON.parse(allStored) : DEMO_CATEGORIES;
     saveStoredCategories([...fullList.filter(c => c.restaurant_id !== currentRestaurant.id), ...updated]);
@@ -406,7 +647,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   return (
     <RestaurantContext.Provider
       value={{
-        restaurants,
+        restaurants: visibleRestaurants,
         currentRestaurant,
         categories,
         items,
