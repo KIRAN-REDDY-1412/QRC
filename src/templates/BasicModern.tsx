@@ -103,8 +103,11 @@ export const BasicModern: React.FC<TemplateProps> = ({
                         </div>
                         <SpiceLevel level={item.spice_level} />
                       </div>
+                      {item.caption && (
+                        <p className="text-[11px] font-medium text-amber-600 mt-0.5 italic">{item.caption}</p>
+                      )}
                       {item.description && (
-                        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">{item.description}</p>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{item.description}</p>
                       )}
                     </div>
 

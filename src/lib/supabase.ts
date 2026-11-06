@@ -9,7 +9,8 @@ import {
   RestaurantTemplateSettings, 
   PaymentRecord,
   AnalyticsEvent,
-  CustomerOrder
+  CustomerOrder,
+  TableBooking
 } from '@/types';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -763,7 +764,8 @@ const STORAGE_KEYS = {
   SUBSCRIPTIONS: 'smartqr_subscriptions',
   PLANS: 'smartqr_plans',
   PAYMENTS: 'smartqr_payments',
-  ANALYTICS: 'smartqr_analytics'
+  ANALYTICS: 'smartqr_analytics',
+  BOOKINGS: 'smartqr_table_bookings'
 };
 
 // ============================================================================
@@ -972,4 +974,51 @@ export const saveStoredOrder = (order: CustomerOrder) => {
   const all: CustomerOrder[] = data ? JSON.parse(data) : [];
   all.unshift(order);
   localStorage.setItem('smartqr_orders', JSON.stringify(all));
+};
+
+export const getStoredBookings = (restaurantId: string): TableBooking[] => {
+  const data = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
+  const all: TableBooking[] = data ? JSON.parse(data) : [
+    {
+      id: 'book-1',
+      restaurant_id: restaurantId,
+      customer_name: 'Aditya Verma',
+      customer_phone: '+91 98201 55678',
+      guest_count: 4,
+      booking_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      booking_time: '08:00 PM',
+      seating_section: 'Courtyard',
+      special_notes: 'Corner table for anniversary celebration',
+      status: 'confirmed',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'book-2',
+      restaurant_id: restaurantId,
+      customer_name: 'Pooja Hegde',
+      customer_phone: '+91 99304 88123',
+      guest_count: 2,
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '09:00 PM',
+      seating_section: 'Rooftop Lounge',
+      special_notes: 'Quiet romantic table',
+      status: 'pending',
+      created_at: new Date().toISOString()
+    }
+  ];
+  return all.filter(b => b.restaurant_id === restaurantId);
+};
+
+export const saveStoredBooking = (booking: TableBooking) => {
+  const data = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
+  const all: TableBooking[] = data ? JSON.parse(data) : [];
+  all.unshift(booking);
+  localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(all));
+};
+
+export const updateBookingStatus = (bookingId: string, status: TableBooking['status']) => {
+  const data = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
+  const all: TableBooking[] = data ? JSON.parse(data) : [];
+  const updated = all.map(b => b.id === bookingId ? { ...b, status } : b);
+  localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(updated));
 };

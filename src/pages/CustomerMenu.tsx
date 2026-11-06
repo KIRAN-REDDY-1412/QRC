@@ -22,6 +22,7 @@ import { MenuCartDrawer } from '@/components/menu/MenuCartDrawer';
 import { UpiPaymentModal } from '@/components/menu/UpiPaymentModal';
 import { GoogleReviewBooster } from '@/components/menu/GoogleReviewBooster';
 import { OpeningExperienceOverlay } from '@/components/menu/OpeningExperienceOverlay';
+import { TableBookingModal } from '@/components/menu/TableBookingModal';
 import { 
   Search, 
   Globe, 
@@ -38,7 +39,8 @@ import {
   Check,
   Sparkles,
   Crown,
-  X
+  X,
+  Calendar
 } from 'lucide-react';
 
 export const CustomerMenu: React.FC = () => {
@@ -79,6 +81,7 @@ export const CustomerMenu: React.FC = () => {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [isUpiModalOpen, setIsUpiModalOpen] = useState<boolean>(false);
   const [isDishPickerOpen, setIsDishPickerOpen] = useState<boolean>(false);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState<boolean>(false);
   const [waiterToast, setWaiterToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -390,14 +393,24 @@ export const CustomerMenu: React.FC = () => {
             </button>
           </div>
 
-          {/* Quick Actions (Premium Plus Order / Waiter / UPI) */}
-          <div className="flex items-center gap-1">
+          {/* Quick Actions (Book Table / Order / Waiter / UPI / Search) */}
+          <div className="flex items-center gap-1.5">
+            {/* Book Table Button */}
+            <button
+              onClick={() => setIsBookingModalOpen(true)}
+              className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition flex items-center gap-1 shadow-md shadow-amber-500/20 whitespace-nowrap"
+              title="Book a Table at this restaurant"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Book Table</span>
+            </button>
+
             {isPremiumPlus && (
               <>
                 {/* Add Dish Quick Button */}
                 <button
                   onClick={() => setIsDishPickerOpen(true)}
-                  className="px-2.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition flex items-center gap-1 shadow-sm"
+                  className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1 shadow-sm"
                   title="Add Dish to Order"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -564,6 +577,13 @@ export const CustomerMenu: React.FC = () => {
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
         onOpenUpiPayment={() => setIsUpiModalOpen(true)}
+      />
+
+      {/* MODAL: TABLE BOOKING & RESERVATION */}
+      <TableBookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        restaurant={restaurant}
       />
 
       {/* MODAL: UPI INSTANT PAYMENT (FEATURE 3) */}

@@ -2,18 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlan } from '@/context/PlanContext';
 import { useAuth } from '@/context/AuthContext';
-import { 
-  QrCode, 
-  Search, 
-  ShoppingBag, 
-  ArrowRight, 
-  Sparkles, 
-  Check, 
-  Star, 
-  Zap, 
-  MessageCircle, 
-  CreditCard, 
-  ShieldCheck, 
+import {
+  QrCode,
+  Search,
+  ShoppingBag,
+  ArrowRight,
+  Sparkles,
+  Check,
+  Star,
+  Zap,
+  MessageCircle,
+  CreditCard,
+  ShieldCheck,
   ChevronRight,
   Maximize2,
   X,
@@ -240,30 +240,30 @@ export const LandingPageMasterpiece: React.FC = () => {
   const basicPlan = plans.find(p => p.code === 'basic') || plans[0];
   const premiumPlan = plans.find(p => p.code === 'premium') || plans[1];
 
-  const filteredTemplates = ALL_TEMPLATES.filter(t => 
+  const filteredTemplates = ALL_TEMPLATES.filter(t =>
     selectedTier === 'all' ? true : t.tier === selectedTier
   );
 
   return (
     <div className="min-h-screen bg-[#0c0f0e] text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden relative">
-      
+
       {/* 3D Motion Depth Particle Canvas */}
-      <canvas 
-        ref={canvasRef} 
+      <canvas
+        ref={canvasRef}
         className="fixed inset-0 pointer-events-none z-0 opacity-75"
       />
 
       {/* Floating 3D Ambient Glowing Light Spheres */}
-      <div 
-        className="fixed top-20 -left-20 w-[550px] h-[550px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none animate-float-slow -z-10" 
+      <div
+        className="fixed top-20 -left-20 w-[550px] h-[550px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none animate-float-slow -z-10"
         style={{ transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)` }}
       />
-      <div 
-        className="fixed bottom-10 -right-20 w-[650px] h-[650px] bg-emerald-500/10 rounded-full blur-[180px] pointer-events-none animate-float-reverse -z-10" 
+      <div
+        className="fixed bottom-10 -right-20 w-[650px] h-[650px] bg-emerald-500/10 rounded-full blur-[180px] pointer-events-none animate-float-reverse -z-10"
         style={{ transform: `translate(${mousePos.x * -25}px, ${mousePos.y * -25}px)` }}
       />
-      <div 
-        className="fixed top-1/2 left-1/3 w-[450px] h-[450px] bg-orange-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse -z-10" 
+      <div
+        className="fixed top-1/2 left-1/3 w-[450px] h-[450px] bg-orange-600/10 rounded-full blur-[150px] pointer-events-none animate-pulse -z-10"
       />
 
       {/* =========================================================================
@@ -271,7 +271,7 @@ export const LandingPageMasterpiece: React.FC = () => {
          ========================================================================= */}
       <header className="fixed top-0 inset-x-0 z-50 bg-[#0c0f0e]/85 backdrop-blur-xl border-b border-white/5 transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          
+
           {/* Logo (Left): Monogram crest inspired by Reference 1 */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg shadow-amber-500/20">
@@ -300,11 +300,10 @@ export const LandingPageMasterpiece: React.FC = () => {
                 key={item.name}
                 href={item.href}
                 onClick={() => setActiveNav(item.name)}
-                className={`px-4 py-1.5 rounded-full text-xs tracking-wider uppercase transition-all ${
-                  activeNav === item.name 
-                    ? 'bg-white/15 text-white font-semibold shadow-sm' 
+                className={`px-4 py-1.5 rounded-full text-xs tracking-wider uppercase transition-all ${activeNav === item.name
+                    ? 'bg-white/15 text-white font-semibold shadow-sm'
                     : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 {item.name}
               </a>
@@ -364,17 +363,17 @@ export const LandingPageMasterpiece: React.FC = () => {
           Warm amber fine dining atmosphere + luxury serif typography
          ========================================================================= */}
       <section className="relative pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-[92vh] flex flex-col justify-center">
-        
+
         {/* Background Atmosphere Image Container with 3D Parallax Tilt */}
-        <div 
+        <div
           className="absolute inset-0 z-0 rounded-[40px] overflow-hidden mx-4 sm:mx-6 lg:mx-8 my-6 border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.85)] transition-transform duration-300 ease-out"
           style={{
             transform: `perspective(1000px) rotateX(${mousePos.y * -3.5}deg) rotateY(${mousePos.x * 3.5}deg) scale(1.01)`
           }}
         >
-          <img 
-            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=2200&q=85" 
-            alt="Fine Dining Luxury Restaurant Ambience" 
+          <img
+            src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=2200&q=85"
+            alt="Fine Dining Luxury Restaurant Ambience"
             className="w-full h-full object-cover brightness-[0.40] contrast-[1.15] transition-transform duration-500 ease-out"
             style={{
               transform: `translate(${mousePos.x * -12}px, ${mousePos.y * -12}px) scale(1.08)`
@@ -386,7 +385,7 @@ export const LandingPageMasterpiece: React.FC = () => {
 
         {/* Hero Content Box */}
         <div className="relative z-10 max-w-3xl space-y-6 sm:space-y-8 pl-4 sm:pl-10">
-          
+
           {/* Pill Tag from Reference 1 */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/60 border border-white/15 text-amber-400 text-xs font-mono tracking-widest uppercase backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -406,18 +405,18 @@ export const LandingPageMasterpiece: React.FC = () => {
 
           {/* Hero Action Buttons */}
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button 
+            <button
               onClick={() => {
                 setAuthMode('register');
                 setIsAuthModalOpen(true);
               }}
               className="px-8 py-4 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs uppercase tracking-widest transition shadow-xl shadow-amber-500/25 flex items-center gap-2 group"
             >
-              <span>Launch Your Free Menu &bull; ₹0</span>
+              <span>Launch Your 7 Days Free Trail &bull; ₹0</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <a 
+            <a
               href="#qr-studio"
               className="px-7 py-4 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium text-xs uppercase tracking-widest transition backdrop-blur-md flex items-center gap-2"
             >
@@ -451,7 +450,7 @@ export const LandingPageMasterpiece: React.FC = () => {
           3 capsule cards with floating round plates connected by a dashed arc line
          ========================================================================= */}
       <section id="features" className="relative z-10 py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        
+
         {/* Section Header */}
         <div className="text-center space-y-3 mb-24">
           <span className="text-xs font-mono tracking-widest text-amber-400 uppercase">
@@ -467,30 +466,30 @@ export const LandingPageMasterpiece: React.FC = () => {
 
         {/* 3 Connected Capsule Cards Container */}
         <div className="relative">
-          
+
           {/* Thin curved connecting arc line weaving behind plates */}
-          <svg 
-            className="absolute top-12 inset-x-0 w-full h-32 hidden md:block pointer-events-none z-0" 
-            viewBox="0 0 1000 120" 
+          <svg
+            className="absolute top-12 inset-x-0 w-full h-32 hidden md:block pointer-events-none z-0"
+            viewBox="0 0 1000 120"
             fill="none"
           >
-            <path 
-              d="M 120 70 Q 300 10, 500 70 T 880 70" 
-              stroke="rgba(245, 158, 11, 0.25)" 
-              strokeWidth="1.5" 
+            <path
+              d="M 120 70 Q 300 10, 500 70 T 880 70"
+              stroke="rgba(245, 158, 11, 0.25)"
+              strokeWidth="1.5"
               strokeDasharray="5 5"
             />
           </svg>
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 sm:gap-8 relative z-10">
-            
+
             {/* CARD 1: CONTACTLESS DIGITAL MENU */}
             <div className="flex flex-col items-center group">
               <div className="relative w-56 h-56 sm:w-60 sm:h-60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-4 border-[#181d1a] overflow-hidden -mb-20 z-20 animate-float-slow transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80" 
-                  alt="Artisanal Bowl" 
+                <img
+                  src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80"
+                  alt="Artisanal Bowl"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -501,7 +500,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                   Lightning 0.4s scan speed. Diners view rich food photos, official FSSAI Veg/Non-Veg indicators, and allergens without installing any app.
                 </p>
                 <div className="pt-2">
-                  <a 
+                  <a
                     href="#templates"
                     className="text-xs font-serif italic text-amber-300 hover:text-amber-200 transition tracking-wider underline underline-offset-4"
                   >
@@ -514,9 +513,9 @@ export const LandingPageMasterpiece: React.FC = () => {
             {/* CARD 2: WHATSAPP KITCHEN ORDERING */}
             <div className="flex flex-col items-center group">
               <div className="relative w-56 h-56 sm:w-60 sm:h-60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-4 border-[#181d1a] overflow-hidden -mb-20 z-20 animate-float-reverse transition-transform duration-500 group-hover:scale-105 group-hover:-rotate-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80" 
-                  alt="Chef Specialties" 
+                <img
+                  src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80"
+                  alt="Chef Specialties"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -527,7 +526,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                   Guests order directly from their table. Formatted Kitchen Order Tickets (KOT) arrive on your chef's WhatsApp instantly with table numbers and notes.
                 </p>
                 <div className="pt-2">
-                  <a 
+                  <a
                     href="#table-ordering"
                     className="text-xs font-serif italic text-amber-300 hover:text-amber-200 transition tracking-wider underline underline-offset-4"
                   >
@@ -539,13 +538,13 @@ export const LandingPageMasterpiece: React.FC = () => {
 
             {/* CARD 3: ZERO-FEE UPI & GOOGLE REVIEWS */}
             <div className="flex flex-col items-center group">
-              <div 
+              <div
                 className="relative w-56 h-56 sm:w-60 sm:h-60 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-4 border-[#181d1a] overflow-hidden -mb-20 z-20 animate-float-slow transition-transform duration-500 group-hover:scale-105 group-hover:rotate-2"
                 style={{ animationDelay: '1.5s' }}
               >
-                <img 
-                  src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80" 
-                  alt="Dessert & Drinks" 
+                <img
+                  src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80"
+                  alt="Dessert & Drinks"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -556,7 +555,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                   Settle table bills via Google Pay, PhonePe, or Paytm with 0% commissions. Happy diners are automatically directed to leave 5-Star Google reviews.
                 </p>
                 <div className="pt-2">
-                  <a 
+                  <a
                     href="#pricing"
                     className="text-xs font-serif italic text-amber-300 hover:text-amber-200 transition tracking-wider underline underline-offset-4"
                   >
@@ -577,17 +576,17 @@ export const LandingPageMasterpiece: React.FC = () => {
           Vibrant Terracotta / Amber Enclosure + Laptop Device with Scanner Target Modal
          ========================================================================= */}
       <section id="qr-studio" className="relative z-10 py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        
+
         {/* Vibrant Terracotta Container with Curved Rounded Corners */}
         <div className="rounded-[44px] bg-gradient-to-b from-[#e67e22] via-[#d35400] to-[#b94400] p-6 sm:p-12 relative overflow-hidden shadow-2xl border-4 border-amber-300/30 text-slate-900">
-          
+
           {/* Big Stylized Header: "QR" (filled) + "Menu" (outline) from Reference 2 */}
           <div className="text-center space-y-1 mb-8">
             <div className="flex items-center justify-center gap-3">
               <span className="text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-tight drop-shadow-md">
                 QR
               </span>
-              <span 
+              <span
                 className="text-5xl sm:text-7xl lg:text-8xl font-black text-transparent tracking-tight drop-shadow-md"
                 style={{ WebkitTextStroke: '2.5px #ffffff' }}
               >
@@ -601,21 +600,21 @@ export const LandingPageMasterpiece: React.FC = () => {
 
           {/* Laptop Mockup (MacBook Pro from Reference 2) */}
           <div className="max-w-4xl mx-auto relative">
-            
-            <div 
+
+            <div
               className="rounded-[24px] bg-[#1a1b1d] p-3 shadow-2xl border border-white/20 transition-transform duration-300 ease-out"
               style={{
                 transform: `perspective(1200px) rotateX(${mousePos.y * -4.5}deg) rotateY(${mousePos.x * 4.5}deg)`
               }}
             >
-              
+
               <div className="rounded-[18px] bg-[#23150d] min-h-[460px] sm:min-h-[520px] relative overflow-hidden p-6 sm:p-10 flex flex-col justify-center items-center">
-                
+
                 {/* Background Dimmed Restaurant Ambience */}
                 <div className="absolute inset-0 bg-cover bg-center opacity-40">
-                  <img 
-                    src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80" 
-                    alt="Restaurant Dining Scene" 
+                  <img
+                    src="https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80"
+                    alt="Restaurant Dining Scene"
                     className="w-full h-full object-cover filter blur-[2px]"
                   />
                   <div className="absolute inset-0 bg-black/60" />
@@ -624,10 +623,10 @@ export const LandingPageMasterpiece: React.FC = () => {
                 {/* THE FLOATING QR SCANNER MODAL (Exact match to Reference 2) */}
                 {isQrModalOpen ? (
                   <div className="relative z-20 w-full max-w-md bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.6)] text-center text-slate-800 space-y-5 animate-fade-in">
-                    
+
                     {/* Modal Top Bar */}
                     <div className="flex items-center justify-between text-xs text-slate-400">
-                      <button 
+                      <button
                         onClick={() => setIsQrModalOpen(false)}
                         className="w-6 h-6 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500 transition"
                       >
@@ -639,7 +638,7 @@ export const LandingPageMasterpiece: React.FC = () => {
 
                     {/* QR Code Container with 4 Corner Brackets from Reference 2 */}
                     <div className="relative w-48 h-48 sm:w-52 sm:h-52 mx-auto flex items-center justify-center p-4">
-                      
+
                       {/* Corner Target Brackets */}
                       <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-slate-900" />
                       <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-slate-900" />
@@ -655,7 +654,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                         <span className="text-[10px] font-black tracking-widest text-slate-800 mt-1 uppercase">
                           TABLE #4 &bull; SMARTQR
                         </span>
-                        
+
                         {/* Center Logo Badge (Highlighted in User Requirements) */}
                         <div className="absolute inset-0 m-auto w-7 h-7 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] flex items-center justify-center shadow-md">
                           QR
@@ -738,7 +737,7 @@ export const LandingPageMasterpiece: React.FC = () => {
          ========================================================================= */}
       <section id="table-ordering" className="relative z-10 py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
+
           {/* Column A: "Our Culinary Canvas" */}
           <div className="space-y-8">
             <div className="space-y-3">
@@ -756,9 +755,9 @@ export const LandingPageMasterpiece: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-[28px] overflow-hidden h-64 border border-white/10 shadow-2xl relative group">
-                <img 
-                  src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=800&q=80" 
-                  alt="Upscale Dining Atmosphere" 
+                <img
+                  src="https://images.unsplash.com/photo-1543007630-9710e4a00a20?auto=format&fit=crop&w=800&q=80"
+                  alt="Upscale Dining Atmosphere"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-mono text-amber-300">
@@ -767,9 +766,9 @@ export const LandingPageMasterpiece: React.FC = () => {
               </div>
 
               <div className="rounded-[28px] overflow-hidden h-64 border border-white/10 shadow-2xl relative group">
-                <img 
-                  src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80" 
-                  alt="Bistro Dining Tables" 
+                <img
+                  src="https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80"
+                  alt="Bistro Dining Tables"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-mono text-amber-300">
@@ -796,13 +795,13 @@ export const LandingPageMasterpiece: React.FC = () => {
             </p>
 
             <div className="relative rounded-[32px] overflow-hidden h-80 border border-white/10 shadow-2xl group">
-              <img 
-                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1200&q=80" 
-                alt="Chef in Kitchen" 
+              <img
+                src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=1200&q=80"
+                alt="Chef in Kitchen"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.80]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
-              
+
               <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg text-white font-bold">1-Click WhatsApp Kitchen Dispatch</h4>
@@ -839,11 +838,10 @@ export const LandingPageMasterpiece: React.FC = () => {
               <button
                 key={tier}
                 onClick={() => setSelectedTier(tier)}
-                className={`px-4 py-1.5 rounded-full uppercase tracking-wider font-semibold transition ${
-                  selectedTier === tier 
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' 
+                className={`px-4 py-1.5 rounded-full uppercase tracking-wider font-semibold transition ${selectedTier === tier
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
                     : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
-                }`}
+                  }`}
               >
                 {tier === 'all' ? 'All 15 Templates' : tier === 'premium_plus' ? 'Plus Tier' : tier}
               </button>
@@ -853,14 +851,14 @@ export const LandingPageMasterpiece: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredTemplates.map((tmpl, idx) => (
-            <div 
+            <div
               key={tmpl.id}
               className="p-6 rounded-[32px] bg-[#131715] border border-white/10 hover:border-amber-400/40 transition-all duration-300 shadow-xl group"
             >
               <div className="w-full h-52 rounded-2xl overflow-hidden mb-5 relative">
-                <img 
-                  src={tmpl.thumbnail_url} 
-                  alt={tmpl.name} 
+                <img
+                  src={tmpl.thumbnail_url}
+                  alt={tmpl.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.85]"
                 />
                 <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/15 text-[10px] font-mono uppercase text-amber-300">
@@ -923,7 +921,7 @@ export const LandingPageMasterpiece: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
-          
+
           {/* BASIC PLAN */}
           <div className="p-8 rounded-[36px] bg-[#131715] border border-white/10 flex flex-col justify-between shadow-2xl relative">
             <div className="space-y-4">
@@ -932,7 +930,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                 <span className="text-[10px] font-mono text-white/40 uppercase">Essential</span>
               </div>
               <h3 className="text-2xl font-serif text-white">{basicPlan?.name || 'Basic Plan'}</h3>
-              
+
               {/* Dual Price Box: Both Yearly & Monthly Shown in Frame */}
               <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2.5">
                 <div className="flex items-baseline justify-between pb-2 border-b border-white/10">
@@ -963,7 +961,7 @@ export const LandingPageMasterpiece: React.FC = () => {
               <p className="text-xs text-white/60 font-light">
                 {basicPlan?.description || 'Essential digital QR menu platform for cafes, dhabas, and modern food joints.'}
               </p>
-              
+
               <ul className="space-y-2.5 pt-4 text-xs text-white/70">
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" /> Permanent Restaurant QR Standee</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-400" /> Up to 100 Menu Items & 15 Categories</li>
@@ -998,7 +996,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                 <span className="text-[10px] font-mono text-amber-300 uppercase">All-Inclusive</span>
               </div>
               <h3 className="text-2xl font-serif text-white">{premiumPlan?.name || 'Premium Luxury Plan'}</h3>
-              
+
               {/* Dual Price Box: Both Yearly & Monthly Shown in Frame */}
               <div className="p-4 rounded-2xl bg-black/50 border border-amber-400/30 space-y-2.5">
                 <div className="flex items-baseline justify-between pb-2 border-b border-white/10">
@@ -1029,7 +1027,7 @@ export const LandingPageMasterpiece: React.FC = () => {
               <p className="text-xs text-white/60 font-light">
                 {premiumPlan?.description || 'The complete bespoke suite for high-volume restaurants, luxury dining, and franchise brands.'}
               </p>
-              
+
               <ul className="space-y-2.5 pt-4 text-xs text-white/70">
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-amber-400 font-bold" /> Access to ALL 15 Luxury & Glassmorphism Templates</li>
                 <li className="flex items-center gap-2"><Check className="w-4 h-4 text-amber-400 font-bold text-amber-200" /> Instant QR Scan Opening Intro Animation (Glow & Particles)</li>
@@ -1077,11 +1075,11 @@ export const LandingPageMasterpiece: React.FC = () => {
           AUTH POPUP MODAL (LOGIN / REGISTER)
          ========================================================================= */}
       {isAuthModalOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setIsAuthModalOpen(false)}
         >
-          <div 
+          <div
             className="w-full max-w-md bg-[#161b18] border border-white/20 rounded-[36px] p-8 text-white space-y-6 shadow-2xl relative"
             onClick={e => e.stopPropagation()}
           >
@@ -1094,7 +1092,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                   {authMode === 'register' ? 'Set up your contactless QR menu in 2 minutes.' : 'Access your menu editor and QR studio.'}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsAuthModalOpen(false)}
                 className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white"
               >
@@ -1175,7 +1173,7 @@ export const LandingPageMasterpiece: React.FC = () => {
               {authMode === 'register' ? (
                 <p>
                   Already have an account?{' '}
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setAuthMode('login')}
                     className="text-amber-400 hover:underline font-bold"
@@ -1186,7 +1184,7 @@ export const LandingPageMasterpiece: React.FC = () => {
               ) : (
                 <p>
                   Don't have an account?{' '}
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setAuthMode('register')}
                     className="text-amber-400 hover:underline font-bold"
@@ -1204,11 +1202,11 @@ export const LandingPageMasterpiece: React.FC = () => {
           SCANNED MENU MODAL (Triggered when user clicks "Show menu" in Laptop simulator)
          ========================================================================= */}
       {scannedMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setScannedMenuOpen(false)}
         >
-          <div 
+          <div
             className="w-full max-w-lg bg-[#141916] border border-amber-400/40 rounded-[36px] p-6 sm:p-8 text-white space-y-5 shadow-2xl relative"
             onClick={e => e.stopPropagation()}
           >
@@ -1217,7 +1215,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                 <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Digital Table Menu</span>
                 <h3 className="text-xl font-serif text-white font-bold">{manualCode || 'Table #4'} &bull; Spice Craft Bistro</h3>
               </div>
-              <button 
+              <button
                 onClick={() => setScannedMenuOpen(false)}
                 className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:text-white"
               >
@@ -1241,7 +1239,7 @@ export const LandingPageMasterpiece: React.FC = () => {
                     <p className="text-[11px] text-white/50">{item.desc}</p>
                     <span className="text-xs font-mono font-bold text-amber-300">{item.price}</span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       confetti({ particleCount: 30, spread: 40 });
                     }}

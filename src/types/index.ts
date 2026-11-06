@@ -89,6 +89,7 @@ export interface MenuItem {
   restaurant_id: string;
   category_id: string;
   name: string;
+  caption?: string; // Short badge/tagline/highlight (e.g. "Chef's Special", "Crispy & Hot", "Serves 2")
   description?: string;
   price: number;
   discount_price?: number;
@@ -226,5 +227,19 @@ export interface CustomerOrder {
   status: 'new' | 'in_kitchen' | 'ready' | 'completed' | 'cancelled';
   payment_method?: 'cash' | 'upi' | 'card';
   payment_status: 'pending' | 'paid';
+  created_at: string;
+}
+
+export interface TableBooking {
+  id: string;
+  restaurant_id: string;
+  customer_name: string;
+  customer_phone: string;
+  guest_count: number;
+  booking_date: string;
+  booking_time: string;
+  seating_section?: string;
+  special_notes?: string;
+  status: 'pending' | 'confirmed' | 'seated' | 'cancelled';
   created_at: string;
 }

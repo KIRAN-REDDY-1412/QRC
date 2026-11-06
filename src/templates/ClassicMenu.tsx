@@ -126,6 +126,11 @@ export const ClassicMenu: React.FC<TemplateProps> = ({
                         )}
                       </div>
                     </div>
+                    {item.caption && (
+                      <p className="text-[11px] font-semibold text-amber-700 italic pl-5 mt-0.5">
+                        {item.caption}
+                      </p>
+                    )}
                     {item.description && (
                       <p className="text-xs text-[#6e5d50] mt-1 leading-relaxed pl-5 font-sans">
                         {item.description}

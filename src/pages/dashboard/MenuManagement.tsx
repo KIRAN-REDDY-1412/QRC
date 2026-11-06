@@ -54,6 +54,7 @@ export const MenuManagement: React.FC = () => {
 
   // Form states for Item
   const [itemName, setItemName] = useState('');
+  const [itemCaption, setItemCaption] = useState('');
   const [itemCategoryId, setItemCategoryId] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [itemPrice, setItemPrice] = useState<number>(250);
@@ -76,9 +77,17 @@ export const MenuManagement: React.FC = () => {
 
   // Handle open item modal
   const openNewItemModal = () => {
+    // If no category exists yet, auto-create a default category so owner is never blocked
+    let targetCatId = categories[0]?.id;
+    if (!targetCatId) {
+      const newCat = addCategory("Chef's Specials", 'Freshly prepared specialty dishes');
+      targetCatId = categories[0]?.id || `cat-${Date.now()}`;
+    }
+
     setEditingItem(null);
     setItemName('');
-    setItemCategoryId(categories[0]?.id || '');
+    setItemCaption('');
+    setItemCategoryId(targetCatId || '');
     setItemDescription('');
     setItemPrice(250);
     setItemDiscountPrice(undefined);
@@ -94,6 +103,7 @@ export const MenuManagement: React.FC = () => {
   const openEditItemModal = (item: MenuItem) => {
     setEditingItem(item);
     setItemName(item.name);
+    setItemCaption(item.caption || '');
     setItemCategoryId(item.category_id);
     setItemDescription(item.description || '');
     setItemPrice(item.price);
@@ -109,12 +119,23 @@ export const MenuManagement: React.FC = () => {
 
   const handleSaveItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!itemName || !itemCategoryId) return;
+    if (!itemName) return;
+
+    let targetCatId = itemCategoryId;
+    if (!targetCatId) {
+      if (categories.length > 0) {
+        targetCatId = categories[0].id;
+      } else {
+        const created = addCategory("Main Courses", "House culinary specialties");
+        targetCatId = categories[0]?.id || `cat-${Date.now()}`;
+      }
+    }
 
     if (editingItem) {
       updateItem(editingItem.id, {
         name: itemName,
-        category_id: itemCategoryId,
+        caption: itemCaption.trim() || undefined,
+        category_id: targetCatId,
         description: itemDescription,
         price: Number(itemPrice),
         discount_price: itemDiscountPrice ? Number(itemDiscountPrice) : undefined,
@@ -127,8 +148,9 @@ export const MenuManagement: React.FC = () => {
       });
     } else {
       addItem({
-        category_id: itemCategoryId,
+        category_id: targetCatId,
         name: itemName,
+        caption: itemCaption.trim() || undefined,
         description: itemDescription,
         price: Number(itemPrice),
         discount_price: itemDiscountPrice ? Number(itemDiscountPrice) : undefined,
@@ -339,6 +361,12 @@ export const MenuManagement: React.FC = () => {
                             </span>
                           )}
                         </div>
+                        {item.caption && (
+                          <p className="text-[11px] font-semibold text-amber-300 flex items-center gap-1 mt-0.5">
+                            <Sparkles className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                            <span>{item.caption}</span>
+                          </p>
+                        )}
                         <p className="text-xs text-slate-400 mt-0.5 line-clamp-1 max-w-md">
                           {item.description || 'No description provided.'}
                         </p>
@@ -475,6 +503,24 @@ export const MenuManagement: React.FC = () => {
                 />
               </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-300 block">
+                    Caption / Short Tagline (Optional)
+                  </label>
+                  <span className="text-[10px] text-amber-400 font-mono">
+                    e.g. Chef's Special &bull; Crispy & Hot &bull; Serves 2
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  value={itemCaption}
+                  onChange={(e) => setItemCaption(e.target.value)}
+                  placeholder="e.g. Awadhi Royal Specialty &bull; Slow-cooked for 12 hours"
+                  className="w-full px-3.5 py-2.5 bg-slate-950 text-white text-xs rounded-xl border border-slate-800 focus:outline-none focus:border-emerald-500 placeholder:text-slate-600"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">Category *</label>
@@ -530,7 +576,7 @@ export const MenuManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">Description</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1">Description / Ingredients / Details (Optional)</label>
                 <textarea
                   rows={2}
                   value={itemDescription}
