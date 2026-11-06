@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlan } from '@/context/PlanContext';
 import { useRestaurant } from '@/context/RestaurantContext';
 import { useAuth } from '@/context/AuthContext';
@@ -23,7 +23,22 @@ export const UpgradeModal: React.FC = () => {
   const [selectedPlanCode, setSelectedPlanCode] = useState<PlanCode>(() => {
     return requiredTierForModal === 'basic' ? 'basic' : 'premium';
   });
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingPlanCode, setProcessingPlanCode] = useState<PlanCode | null>(null);
+
+  // Clean close handler that always resets any stuck processing state
+  const handleClose = () => {
+    setProcessingPlanCode(null);
+    closeUpgradeModal();
+  };
+
+  // Close on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   if (!isUpgradeModalOpen) return null;
 
@@ -32,8 +47,14 @@ export const UpgradeModal: React.FC = () => {
   const activeSelectedPlan = displayPlans.find(p => p.code === selectedPlanCode) || displayPlans[1] || displayPlans[0];
 
   const handleUpgrade = async (plan: SubscriptionPlan) => {
-    setIsProcessing(true);
+    setProcessingPlanCode(plan.code);
     const priceToPay = billingCycle === 'yearly' ? plan.yearly_price : plan.monthly_price;
+
+    // Safety timeout: never leave button in spinning state indefinitely
+    const safetyTimer = setTimeout(() => {
+      setProcessingPlanCode(null);
+    }, 6000);
+
     try {
       await initiateRazorpayPayment({
         amountInINR: priceToPay,
@@ -42,26 +63,37 @@ export const UpgradeModal: React.FC = () => {
         userEmail: user?.email || 'owner@restaurant.in',
         userPhone: user?.phone || '+919820012345',
         onSuccess: async (paymentId, orderId) => {
-          await upgradeSubscription(plan.code, billingCycle, {
-            gateway_payment_id: paymentId,
-            gateway_order_id: orderId,
-            payment_gateway: 'razorpay'
-          });
-          setIsProcessing(false);
-          closeUpgradeModal();
+          clearTimeout(safetyTimer);
+          try {
+            await upgradeSubscription(plan.code, billingCycle, {
+              gateway_payment_id: paymentId,
+              gateway_order_id: orderId,
+              payment_gateway: 'razorpay'
+            });
+          } finally {
+            setProcessingPlanCode(null);
+            closeUpgradeModal();
+          }
         },
         onDismiss: () => {
-          setIsProcessing(false);
+          clearTimeout(safetyTimer);
+          setProcessingPlanCode(null);
         }
       });
     } catch (err) {
+      clearTimeout(safetyTimer);
       console.error('Payment checkout error:', err);
-      setIsProcessing(false);
+      setProcessingPlanCode(null);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in"
+    >
       <div className="relative bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-5 sm:p-8 text-white shadow-2xl overflow-hidden my-auto">
         {/* Glow behind modal */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -69,8 +101,9 @@ export const UpgradeModal: React.FC = () => {
 
         {/* Close Button */}
         <button
-          onClick={closeUpgradeModal}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white transition"
+          onClick={handleClose}
+          aria-label="Close"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
         >
           <X className="w-5 h-5" />
         </button>
@@ -223,14 +256,14 @@ export const UpgradeModal: React.FC = () => {
                 <div>
                   <button
                     onClick={() => handleUpgrade(plan)}
-                    disabled={isProcessing}
+                    disabled={!!processingPlanCode}
                     className={`w-full py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg ${
                       isPremium
                         ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black shadow-amber-500/20'
                         : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
-                    } ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    } ${processingPlanCode === plan.code ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    {isProcessing ? (
+                    {processingPlanCode === plan.code ? (
                       <>
                         <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                         <span>Connecting to Gateway...</span>
@@ -259,10 +292,10 @@ export const UpgradeModal: React.FC = () => {
             <span>100% Secure Checkout via Razorpay (UPI, Credit Cards, NetBanking)</span>
           </div>
           <button
-            onClick={closeUpgradeModal}
-            className="text-slate-500 hover:text-slate-300 transition"
+            onClick={handleClose}
+            className="text-slate-400 hover:text-white transition font-semibold"
           >
-            Close window
+            Close window ✕
           </button>
         </div>
       </div>

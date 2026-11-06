@@ -140,7 +140,7 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
       case 'food_images':
         return plan.allow_food_images;
       case 'custom_branding':
-        return plan.remove_saas_branding;
+        return plan.allow_custom_colors || plan.allow_custom_fonts;
       case 'multi_language':
         return plan.allow_multi_language;
       case 'table_qr':
