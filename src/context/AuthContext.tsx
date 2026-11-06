@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserProfile, UserRole } from '@/types';
-import { supabase, isLiveSupabase } from '@/lib/supabase';
+import { supabase, isLiveSupabase, generateId } from '@/lib/supabase';
 
 interface AuthContextType {
   user: UserProfile | null;
@@ -16,34 +16,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEMO_USERS: Record<UserRole, UserProfile> = {
-  super_admin: {
-    id: 'user-super-admin',
-    email: 'admin@smartqrmenu.in',
-    full_name: 'Rajesh Sharma (Platform Admin)',
-    role: 'super_admin',
-    avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80'
-  },
-  restaurant_owner: {
-    id: 'user-owner-1',
-    email: 'vikram@saffrondarbar.in',
-    full_name: 'Vikram Malhotra',
-    role: 'restaurant_owner',
-    phone: '+91 98200 12345',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80'
-  },
-  customer: {
-    id: 'user-guest',
-    email: 'guest@smartqrmenu.in',
-    full_name: 'Dining Guest',
-    role: 'customer'
-  }
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem('smartqr_current_user');
-    return saved ? JSON.parse(saved) : DEMO_USERS.restaurant_owner;
+    return saved ? JSON.parse(saved) : null;
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -59,18 +35,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       if (isLiveSupabase) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password: 'Password123!'
-        });
-        if (error) {
-          console.warn('Supabase Auth error, using fallback demo session:', error.message);
+        const { data } = await supabase.from('profiles').select('*').eq('email', email.toLowerCase()).maybeSingle();
+        if (data) {
+          const logged: UserProfile = {
+            id: data.id,
+            email: data.email,
+            full_name: data.full_name || email.split('@')[0],
+            role: (data.role as UserRole) || preferredRole,
+            avatar_url: data.avatar_url,
+            phone: data.phone
+          };
+          setUser(logged);
+          return;
         }
       }
       
-      const matched = Object.values(DEMO_USERS).find(u => u.email.toLowerCase() === email.toLowerCase());
-      const loggedUser = matched || {
-        id: `user-${Date.now()}`,
+      const loggedUser: UserProfile = {
+        id: generateId(),
         email,
         full_name: email.split('@')[0],
         role: preferredRole
@@ -85,13 +66,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const newUser: UserProfile = {
-        id: `user-${Date.now()}`,
-        email,
-        full_name: fullName,
+        id: generateId(),
+        email: email.trim(),
+        full_name: fullName.trim(),
         role
       };
       setUser(newUser);
       localStorage.setItem('smartqr_current_user', JSON.stringify(newUser));
+
+      if (isLiveSupabase) {
+        supabase.from('profiles').upsert({
+          id: newUser.id,
+          email: newUser.email,
+          full_name: newUser.full_name,
+          role: newUser.role
+        }).then(({ error }) => {
+          if (error) console.warn('Supabase profile upsert error:', error.message);
+        });
+      }
+
       return newUser;
     } finally {
       setIsLoading(false);
@@ -124,7 +117,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchRole = (newRole: UserRole) => {
-    setUser(DEMO_USERS[newRole]);
+    if (user) {
+      setUser({ ...user, role: newRole });
+    }
   };
 
   return (

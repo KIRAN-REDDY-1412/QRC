@@ -289,470 +289,59 @@ export const ALL_TEMPLATES: MenuTemplate[] = [
   },
 ];
 
-// Sample Initial Restaurant for Demo
-export const DEMO_RESTAURANTS: Restaurant[] = [
-  {
-    id: 'rest-saffron-darbar',
-    owner_id: 'user-owner-1',
-    name: 'Saffron Heritage Darbar',
-    slug: 'saffron-darbar',
-    tagline: 'Royal Awadhi & Mughlai Culinary Heritage',
-    description: 'Experience centuries-old culinary grandeur crafted with royal slow-cooked dum techniques and fragrant saffron infused delicacies.',
-    phone: '+91 98200 12345',
-    email: 'contact@saffrondarbar.in',
-    fssai_license: '11521008000451',
-    address: 'Plot 42, Heritage Enclave, Colaba Causeway',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    pincode: '400005',
-    currency: 'INR',
-    logo_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80',
-    banner_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-    opening_time: '12:00 PM',
-    closing_time: '11:30 PM',
-    whatsapp_number: '+919820012345',
-    upi_id: 'saffrondarbar@okaxis',
-    google_review_url: 'https://g.page/r/saffron-heritage-darbar/review',
-    enable_ordering: true,
-    enable_upi: true,
-    enable_reviews: true,
-    is_active: true,
-    is_pure_veg: false,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'rest-bombay-cafe',
-    owner_id: 'user-owner-2',
-    name: 'The Bombay Roast & Bistro',
-    slug: 'bombay-roast',
-    tagline: 'Artisanal Brews, Sourdough Pizzas & All-Day Breakfast',
-    description: 'A sunlit neighborhood cafe celebrating slow-roasted Coorg beans, hand-stretched sourdough, and vibrant bowls.',
-    phone: '+91 98450 67890',
-    email: 'hi@bombayroast.com',
-    fssai_license: '11220002000321',
-    address: '80 Feet Road, 4th Block, Koramangala',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    pincode: '560034',
-    currency: 'INR',
-    logo_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=200&q=80',
-    banner_url: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
-    opening_time: '08:00 AM',
-    closing_time: '11:00 PM',
-    whatsapp_number: '+919845067890',
-    upi_id: 'bombayroast@icici',
-    google_review_url: 'https://g.page/r/bombay-roast-bistro/review',
-    enable_ordering: true,
-    enable_upi: true,
-    enable_reviews: true,
-    is_active: true,
-    is_pure_veg: false,
-    created_at: new Date().toISOString()
+// ============================================================================
+// DYNAMIC ID GENERATOR (Valid RFC4122 UUID v4 for PostgreSQL)
+// ============================================================================
+export const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // fallback
+    }
   }
-];
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
-export const DEMO_CATEGORIES: MenuCategory[] = [
-  {
-    id: 'cat-starters',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Shahi Starters & Kebabs',
-    description: 'Charcoal grilled skewers marinated in Kashmiri saffron and hand-ground spices.',
-    icon: 'Flame',
-    order_index: 1,
-    is_active: true
-  },
-  {
-    id: 'cat-mains',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Royal Dawat Mains',
-    description: 'Rich slow-cooked gravies perfected over gentle simmer.',
-    icon: 'Utensils',
-    order_index: 2,
-    is_active: true
-  },
-  {
-    id: 'cat-biryani',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Dum Pukht Biryanis',
-    description: 'Long-grain aged basmati layered with aromatic herbs, sealed in clay handis.',
-    icon: 'Sparkles',
-    order_index: 3,
-    is_active: true
-  },
-  {
-    id: 'cat-breads',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Tandoori Roti & Naan',
-    description: 'Freshly baked in traditional clay ovens with generous desi ghee.',
-    icon: 'Layers',
-    order_index: 4,
-    is_active: true
-  },
-  {
-    id: 'cat-desserts',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Mithai & Shahi Desserts',
-    description: 'Rich royal sweets garnished with 24k edible silver vark and pistachio slivers.',
-    icon: 'Award',
-    order_index: 5,
-    is_active: true
-  },
-  {
-    id: 'cat-beverages',
-    restaurant_id: 'rest-saffron-darbar',
-    name: 'Coolers & Sharbats',
-    description: 'Refreshing traditional infusions of rose, khus, and kokum.',
-    icon: 'Wine',
-    order_index: 6,
-    is_active: true
-  },
-  // The Bombay Roast & Bistro categories
-  {
-    id: 'cat-bombay-coffee',
-    restaurant_id: 'rest-bombay-cafe',
-    name: 'Specialty Coffee & Brews',
-    description: 'Single-origin estate beans roasted to perfection, brewed manually & espresso-based.',
-    icon: 'Coffee',
-    order_index: 1,
-    is_active: true
-  },
-  {
-    id: 'cat-bombay-toasts',
-    restaurant_id: 'rest-bombay-cafe',
-    name: 'Sourdough Toasts & Melts',
-    description: '48-hour fermented wild yeast country sourdough with organic toppings.',
-    icon: 'Utensils',
-    order_index: 2,
-    is_active: true
-  },
-  {
-    id: 'cat-bombay-pizzas',
-    restaurant_id: 'rest-bombay-cafe',
-    name: 'Woodfired Neapolitan Pizzas',
-    description: 'Hand-stretched dough fired at 450°C with Fior di Latte mozzarella.',
-    icon: 'Flame',
-    order_index: 3,
-    is_active: true
-  },
-  {
-    id: 'cat-bombay-desserts',
-    restaurant_id: 'rest-bombay-cafe',
-    name: 'Bakery & Sweet Plates',
-    description: 'Freshly baked viennoiserie, cruffins, and artisanal entremets.',
-    icon: 'Sparkles',
-    order_index: 4,
-    is_active: true
-  }
-];
+// Clean empty state - No mock data. All data is dynamically entered by user & stored in Supabase
+export const DEMO_RESTAURANTS: Restaurant[] = [];
+export const DEMO_CATEGORIES: MenuCategory[] = [];
+export const DEMO_ITEMS: MenuItem[] = [];
 
-export const DEMO_ITEMS: MenuItem[] = [
-  {
-    id: 'item-galouti-kebab',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-starters',
-    name: 'Awadhi Melt-in-Mouth Galouti Kebab',
-    description: 'Finely minced mutton smoked with cloves and 32 proprietary spices, served on coin ulta tawa parathas with mint chutney.',
-    price: 495,
-    discount_price: 450,
-    image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'non_veg',
-    spice_level: 2,
-    calories: 420,
-    preparation_time: '18 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-paneer-tikka',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-starters',
-    name: 'Angari Malai Paneer Tikka',
-    description: 'Fresh cottage cheese cubes marinated in rich clotted cream, crushed yellow chili, and saffron, chargrilled in tandoor.',
-    price: 395,
-    image_url: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'veg',
-    spice_level: 1,
-    calories: 360,
-    preparation_time: '15 mins',
-    order_index: 2
-  },
-  {
-    id: 'item-dahi-kebab',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-starters',
-    name: 'Dahi Ke Shahi Kebab',
-    description: 'Crisp hung yogurt patties infused with crushed green cardamom, bell peppers, and fresh coriander seeds.',
-    price: 365,
-    image_url: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 1,
-    calories: 310,
-    preparation_time: '12 mins',
-    order_index: 3
-  },
-  {
-    id: 'item-murgh-makhani',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-mains',
-    name: 'Purani Dilli Butter Chicken (Murgh Makhani)',
-    description: 'Tandoor-charred chicken steeped in velvety vine-ripened tomato gravy, tempered with Kasuri methi and farmhouse butter.',
-    price: 545,
-    image_url: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'non_veg',
-    spice_level: 1,
-    calories: 580,
-    preparation_time: '20 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-dal-makhani',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-mains',
-    name: '24-Hour Slow Simmered Dal Bukhara',
-    description: 'Whole black lentils, red kidney beans cooked overnight over charcoal fire with tomato reduction and unsalted white butter.',
-    price: 425,
-    image_url: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'veg',
-    spice_level: 1,
-    calories: 460,
-    preparation_time: '10 mins',
-    order_index: 2
-  },
-  {
-    id: 'item-nalli-nihari',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-mains',
-    name: 'Shahi Gosht Nalli Nihari',
-    description: 'Tender baby lamb shanks braised in aromatic bone-marrow jus with ginger juliennes and vetiver essence.',
-    price: 645,
-    image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'non_veg',
-    spice_level: 3,
-    calories: 650,
-    preparation_time: '25 mins',
-    order_index: 3
-  },
-  {
-    id: 'item-mutton-biryani',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-biryani',
-    name: 'Kolkata Style Awadhi Mutton Biryani',
-    description: 'Fragrant Basmati rice cooked with succulent goat meat, golden brown baby potatoes, and meetha ittr. Served with burani raita.',
-    price: 595,
-    discount_price: 545,
-    image_url: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'non_veg',
-    spice_level: 2,
-    calories: 680,
-    preparation_time: '22 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-veg-biryani',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-biryani',
-    name: 'Subz Nizami Handi Biryani',
-    description: 'Seasonal florets, French beans, carrots, and saffron paneer tossed with aged basmati in sealed dough pot.',
-    price: 445,
-    image_url: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 2,
-    calories: 490,
-    preparation_time: '18 mins',
-    order_index: 2
-  },
-  {
-    id: 'item-garlic-naan',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-breads',
-    name: 'Crispy Truffle & Roasted Garlic Naan',
-    description: 'Leavened flatbread brushed with crushed roasted garlic, sea salt, and white truffle infused desi ghee.',
-    price: 145,
-    image_url: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 220,
-    preparation_time: '8 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-shahi-tukda',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-desserts',
-    name: 'Zafrani Shahi Tukda with Rabri',
-    description: 'Crisp ghee-fried brioche soaked in saffron cardamom syrup, smothered with thickened saffron malai and almond flakes.',
-    price: 295,
-    image_url: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 420,
-    preparation_time: '10 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-kesar-pista-kulfi',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-desserts',
-    name: 'Matka Kesar Pista Kulfi',
-    description: 'Traditional slow-reduced milk kulfi set in earthen pots with fragrant royal saffron and whole Iranian pistachios.',
-    price: 245,
-    image_url: 'https://images.unsplash.com/photo-1505394033641-40c6ad1178d7?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 280,
-    preparation_time: '5 mins',
-    order_index: 2
-  },
-  {
-    id: 'item-gulab-sharbat',
-    restaurant_id: 'rest-saffron-darbar',
-    category_id: 'cat-beverages',
-    name: 'Kannauj Rose Petal & Chia Cooler',
-    description: 'Distilled Damascus rose essence with crushed ice, sweet basil seeds, and a dash of mountain honey.',
-    price: 195,
-    image_url: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 140,
-    preparation_time: '5 mins',
-    order_index: 1
-  },
-  // The Bombay Roast & Bistro items
-  {
-    id: 'item-bombay-pour-over',
-    restaurant_id: 'rest-bombay-cafe',
-    category_id: 'cat-bombay-coffee',
-    name: 'Coorg Estate V60 Pour Over',
-    description: 'Light roast washed Arabica with notes of wild orange blossom, jasmine, and sugarcane sweetness.',
-    price: 240,
-    discount_price: 220,
-    image_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'vegan',
-    spice_level: 0,
-    calories: 10,
-    preparation_time: '6 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-bombay-flat-white',
-    restaurant_id: 'rest-bombay-cafe',
-    category_id: 'cat-bombay-coffee',
-    name: 'Velvet Microfoam Flat White',
-    description: 'Double ristretto shot with silky steamed milk and subtle caramel crema art.',
-    price: 220,
-    image_url: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 120,
-    preparation_time: '5 mins',
-    order_index: 2
-  },
-  {
-    id: 'item-bombay-avocado-toast',
-    restaurant_id: 'rest-bombay-cafe',
-    category_id: 'cat-bombay-toasts',
-    name: 'Hass Avocado & Danish Feta Tartine',
-    description: 'Toasted seeded sourdough, smashed Haas avocados, crumbled Danish feta, pomegranate pearls, and lemon dukkah.',
-    price: 380,
-    discount_price: 350,
-    image_url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 340,
-    preparation_time: '10 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-bombay-burrata-pizza',
-    restaurant_id: 'rest-bombay-cafe',
-    category_id: 'cat-bombay-pizzas',
-    name: 'Truffle Burrata & San Marzano Pizza',
-    description: 'Whole Pugliese burrata center, San Marzano tomato coulis, wild rocket, basil oil, and white truffle glaze.',
-    price: 620,
-    image_url: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: true,
-    dietary_type: 'veg',
-    spice_level: 0,
-    calories: 680,
-    preparation_time: '15 mins',
-    order_index: 1
-  },
-  {
-    id: 'item-bombay-croissant',
-    restaurant_id: 'rest-bombay-cafe',
-    category_id: 'cat-bombay-desserts',
-    name: 'Double Baked Almond & Frangipane Croissant',
-    description: 'Golden flaky French butter pastry stuffed with almond cream, toasted flakes, and vanilla snow.',
-    price: 260,
-    image_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=600&q=80',
-    is_available: true,
-    is_featured: false,
-    dietary_type: 'egg',
-    spice_level: 0,
-    calories: 390,
-    preparation_time: '5 mins',
-    order_index: 1
-  }
-];
-
-export const DEMO_SETTINGS: RestaurantTemplateSettings = {
-  restaurant_id: 'rest-saffron-darbar',
-  template_id: 'tpl-10', // Luxury Black Gold by default for demonstration
-  accent_color: '#f59e0b',
-  font_family: 'Plus Jakarta Sans',
-  card_style: 'luxury',
+export const DEFAULT_SETTINGS: RestaurantTemplateSettings = {
+  restaurant_id: '',
+  template_id: 'tpl-1', // Classic Menu
+  accent_color: '#059669',
+  font_family: 'Inter',
+  card_style: 'modern',
   show_photos: true,
   show_dietary_badges: true,
   show_spice_level: true,
   show_prices: true,
-  opening_animation_enabled: true,
-  opening_animation_style: 'luxury_particles',
+  opening_animation_enabled: false,
+  opening_animation_style: 'gold_glow',
   opening_animation_duration: 1.8,
-  opening_animation_tagline: 'Experience Royal Awadhi Gastronomy',
+  opening_animation_tagline: 'Welcome to our digital menu',
   opening_animation_skip_button: true,
   opening_animation_sound: false
 };
+export const DEMO_SETTINGS = DEFAULT_SETTINGS;
 
 export const DEMO_SUBSCRIPTION: Subscription = {
-  id: 'sub-saffron-1',
-  restaurant_id: 'rest-saffron-darbar',
-  plan_id: 'plan-premium',
-  status: 'active',
-  billing_cycle: 'yearly',
-  current_period_start: new Date(Date.now() - 30 * 86400000).toISOString(),
-  current_period_end: new Date(Date.now() + 335 * 86400000).toISOString(),
-  auto_renew: true,
-  plan: DEFAULT_PLANS[1]
+  id: '00000000-0000-0000-0000-000000000000',
+  restaurant_id: '',
+  plan_id: 'plan-basic',
+  status: 'trialing',
+  billing_cycle: 'monthly',
+  current_period_start: new Date().toISOString(),
+  current_period_end: new Date(Date.now() + 7 * 86400000).toISOString(),
+  auto_renew: false,
+  is_trial: true,
+  trial_ends_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+  plan: DEFAULT_PLANS[0]
 };
 
 // Storage keys for localStorage persistence in mock mode
@@ -767,6 +356,26 @@ const STORAGE_KEYS = {
   ANALYTICS: 'smartqr_analytics',
   BOOKINGS: 'smartqr_table_bookings'
 };
+
+// One-time automatic purge: wipe legacy mock/demo data from browser localStorage
+if (typeof window !== 'undefined' && window.localStorage) {
+  try {
+    const rawR = localStorage.getItem(STORAGE_KEYS.RESTAURANTS);
+    if (rawR && (rawR.includes('saffron-darbar') || rawR.includes('rest-saffron-darbar') || rawR.includes('bombay-roast'))) {
+      localStorage.removeItem(STORAGE_KEYS.RESTAURANTS);
+      localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
+      localStorage.removeItem(STORAGE_KEYS.ITEMS);
+      localStorage.removeItem(STORAGE_KEYS.SETTINGS);
+      localStorage.removeItem(STORAGE_KEYS.SUBSCRIPTIONS);
+    }
+    const rawU = localStorage.getItem('smartqr_current_user');
+    if (rawU && (rawU.includes('vikram@saffrondarbar.in') || rawU.includes('user-owner-1'))) {
+      localStorage.removeItem('smartqr_current_user');
+    }
+  } catch {
+    // Ignore error
+  }
+}
 
 // ============================================================================
 // DATA STORE WRAPPER (Local Storage + Supabase fallback)
@@ -830,30 +439,9 @@ export const saveStoredItems = (items: MenuItem[]) => {
 
 export const getStoredSettings = (restaurantId: string): RestaurantTemplateSettings => {
   const data = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-  const all: Record<string, RestaurantTemplateSettings> = data ? JSON.parse(data) : { [DEMO_SETTINGS.restaurant_id]: DEMO_SETTINGS };
+  const all: Record<string, RestaurantTemplateSettings> = data ? JSON.parse(data) : {};
   if (all[restaurantId]) return all[restaurantId];
-  
-  if (restaurantId === 'rest-bombay-cafe') {
-    return {
-      restaurant_id: 'rest-bombay-cafe',
-      template_id: 'tpl-8', // Colorful Cafe
-      accent_color: '#ea580c',
-      font_family: 'Outfit',
-      card_style: 'modern',
-      show_photos: true,
-      show_dietary_badges: true,
-      show_spice_level: true,
-      show_prices: true,
-      opening_animation_enabled: true,
-      opening_animation_style: 'gold_glow',
-      opening_animation_duration: 1.6,
-      opening_animation_tagline: 'Freshly Brewed & Artisanal Bakes',
-      opening_animation_skip_button: true,
-      opening_animation_sound: false
-    };
-  }
-
-  return { ...DEMO_SETTINGS, restaurant_id: restaurantId };
+  return { ...DEFAULT_SETTINGS, restaurant_id: restaurantId };
 };
 
 export const saveStoredSettings = (settings: RestaurantTemplateSettings) => {
@@ -865,7 +453,7 @@ export const saveStoredSettings = (settings: RestaurantTemplateSettings) => {
 
 export const getStoredSubscription = (restaurantId: string): Subscription => {
   const data = localStorage.getItem(STORAGE_KEYS.SUBSCRIPTIONS);
-  const all: Record<string, Subscription> = data ? JSON.parse(data) : { [DEMO_SUBSCRIPTION.restaurant_id]: DEMO_SUBSCRIPTION };
+  const all: Record<string, Subscription> = data ? JSON.parse(data) : {};
   
   if (all[restaurantId]) {
     const plans = getStoredPlans();

@@ -24,7 +24,8 @@ import {
   DEMO_CATEGORIES,
   DEMO_ITEMS,
   isLiveSupabase,
-  supabase
+  supabase,
+  generateId
 } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -124,7 +125,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const cleanSlug = restName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `restaurant-${Date.now()}`;
       
       const newOwnerRest: Restaurant = {
-        id: `rest-${Date.now()}`,
+        id: generateId(),
         owner_id: user.id,
         name: restName,
         slug: cleanSlug,
@@ -285,15 +286,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           query = query.eq('owner_id', user.id);
         }
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          setAllRestaurants(prev => {
-            const map = new Map<string, Restaurant>();
-            prev.forEach(r => map.set(r.id, r));
-            data.forEach((r: any) => map.set(r.id, r as Restaurant));
-            const merged = Array.from(map.values());
-            saveStoredRestaurants(merged);
-            return merged;
-          });
+        if (!error && data) {
+          setAllRestaurants(data as Restaurant[]);
+          saveStoredRestaurants(data as Restaurant[]);
+          if (data.length > 0) {
+            setCurrentRestaurantState(data[0] as Restaurant);
+          }
         }
       } catch (err) {
         console.warn('Supabase restaurant fetch notice:', err);
@@ -405,9 +403,9 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const addRestaurant = (restaurantData: Omit<Restaurant, 'id' | 'created_at' | 'updated_at' | 'owner_id'> & { owner_id?: string }): Restaurant => {
     const newRest: Restaurant = {
       ...restaurantData,
-      owner_id: restaurantData.owner_id || user?.id || `user-${Date.now()}`,
+      owner_id: restaurantData.owner_id || user?.id || generateId(),
       email: restaurantData.email || user?.email || '',
-      id: `rest-${Date.now()}`,
+      id: generateId(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -439,7 +437,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const addRestaurantCategory = (restaurantId: string, name: string, description?: string, icon?: string): MenuCategory => {
     const newCat: MenuCategory = {
-      id: `cat-${Date.now()}`,
+      id: generateId(),
       restaurant_id: restaurantId,
       name,
       description,
@@ -478,7 +476,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const addRestaurantItem = (restaurantId: string, itemData: Omit<MenuItem, 'id' | 'restaurant_id' | 'order_index'>): MenuItem => {
     const newItem: MenuItem = {
       ...itemData,
-      id: `item-${Date.now()}`,
+      id: generateId(),
       restaurant_id: restaurantId,
       order_index: getStoredItems(restaurantId).length + 1,
       created_at: new Date().toISOString()
@@ -534,7 +532,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const addCategory = (name: string, description?: string, icon?: string) => {
     if (!currentRestaurant) return;
     const newCat: MenuCategory = {
-      id: `cat-${Date.now()}`,
+      id: generateId(),
       restaurant_id: currentRestaurant.id,
       name,
       description,
@@ -612,7 +610,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!currentRestaurant) return;
     const newItem: MenuItem = {
       ...itemData,
-      id: `item-${Date.now()}`,
+      id: generateId(),
       restaurant_id: currentRestaurant.id,
       order_index: items.length + 1,
       created_at: new Date().toISOString()
@@ -711,7 +709,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const addTable = (tableNumber: string, section?: string, capacity: number = 4) => {
     if (!currentRestaurant) return;
     const newTable: RestaurantTable = {
-      id: `tbl-${Date.now()}`,
+      id: generateId(),
       restaurant_id: currentRestaurant.id,
       table_number: tableNumber,
       section_name: section || 'Main Dining',
@@ -720,6 +718,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updated = [...tables, newTable];
     setTables(updated);
     localStorage.setItem(`smartqr_tables_${currentRestaurant.id}`, JSON.stringify(updated));
+
+    if (isLiveSupabase) {
+      supabase.from('restaurant_tables').insert(newTable).then(({ error }) => {
+        if (error) console.warn('Supabase table insert notice:', error.message);
+      });
+    }
   };
 
   const deleteTable = (tableId: string) => {
@@ -727,6 +731,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updated = tables.filter(t => t.id !== tableId);
     setTables(updated);
     localStorage.setItem(`smartqr_tables_${currentRestaurant.id}`, JSON.stringify(updated));
+
+    if (isLiveSupabase) {
+      supabase.from('restaurant_tables').delete().eq('id', tableId).then(({ error }) => {
+        if (error) console.warn('Supabase table delete notice:', error.message);
+      });
+    }
   };
 
   return (
