@@ -15,6 +15,10 @@ interface PlanContextType {
   plans: SubscriptionPlan[];
   currentSubscription: Subscription | null;
   payments: PaymentRecord[];
+  isTrial: boolean;
+  trialDaysRemaining: number;
+  isTrialExpired: boolean;
+  isSubscriptionActive: boolean;
   isUpgradeModalOpen: boolean;
   requiredTierForModal: PlanCode;
   openUpgradeModal: (requiredTier?: PlanCode) => void;
@@ -26,6 +30,8 @@ interface PlanContextType {
   scheduleDowngrade: (targetPlanCode: PlanCode) => void;
   cancelSubscription: () => void;
   refreshSubscription: (restaurantId: string) => void;
+  simulateExpireTrial: () => void;
+  resetTrial: () => void;
 }
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
@@ -60,6 +66,51 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
     setIsUpgradeModalOpen(false);
   };
 
+  // 7-Day Free Trial Computation
+  const isTrial = Boolean(currentSubscription?.is_trial || currentSubscription?.status === 'trialing');
+  const trialEndTime = currentSubscription?.trial_ends_at 
+    ? new Date(currentSubscription.trial_ends_at).getTime() 
+    : (currentSubscription ? new Date(currentSubscription.current_period_end).getTime() : 0);
+
+  const msRemaining = trialEndTime - Date.now();
+  const trialDaysRemaining = Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24)));
+  const isTrialExpired = Boolean((isTrial && msRemaining <= 0) || currentSubscription?.status === 'expired');
+  const isSubscriptionActive = (currentSubscription?.status === 'active' || (isTrial && !isTrialExpired)) && !isTrialExpired;
+
+  // Simulator helper to test trial expired state
+  const simulateExpireTrial = () => {
+    if (!currentSubscription) return;
+    const expiredSub: Subscription = {
+      ...currentSubscription,
+      status: 'expired',
+      is_trial: true,
+      current_period_end: new Date(Date.now() - 3600000).toISOString(),
+      trial_ends_at: new Date(Date.now() - 3600000).toISOString()
+    };
+    saveStoredSubscription(expiredSub);
+    setCurrentSubscription(expiredSub);
+  };
+
+  // Simulator helper to reset back to a clean 7-day free trial
+  const resetTrial = () => {
+    if (!currentSubscription) return;
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const basicPlan = plans.find(p => p.code === 'basic') || DEFAULT_PLANS[0];
+    const resetSub: Subscription = {
+      ...currentSubscription,
+      status: 'trialing',
+      is_trial: true,
+      plan_id: basicPlan.id,
+      current_period_start: now.toISOString(),
+      current_period_end: trialEnd.toISOString(),
+      trial_ends_at: trialEnd.toISOString(),
+      plan: basicPlan
+    };
+    saveStoredSubscription(resetSub);
+    setCurrentSubscription(resetSub);
+  };
+
   const updatePlanPricing = (planId: string, updates: Partial<SubscriptionPlan>) => {
     const updated = plans.map(p => p.id === planId ? { ...p, ...updates } : p);
     setPlans(updated);
@@ -75,12 +126,14 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
 
   // Hierarchy check: basic (all standard) < premium (all 15 luxury templates)
   const canAccessTemplate = (templateTier: PlanCode): boolean => {
+    if (isTrialExpired) return false;
     const currentPlanCode = currentSubscription?.plan?.code || 'basic';
     if (currentPlanCode === 'premium' || currentPlanCode === 'premium_plus') return true;
     return templateTier === 'basic' || templateTier === 'free';
   };
 
   const canAccessFeature = (featureKey: 'food_images' | 'custom_branding' | 'multi_language' | 'table_qr' | 'analytics' | 'custom_qr_logo' | 'ordering' | 'upi_payment' | 'bulk_import' | 'review_booster'): boolean => {
+    if (isTrialExpired) return false;
     const plan = currentSubscription?.plan;
     if (!plan) return false;
     switch (featureKey) {
@@ -121,6 +174,8 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
       restaurant_id: currentRestaurantId,
       plan_id: targetPlan.id,
       status: 'active',
+      is_trial: false,
+      trial_ends_at: undefined,
       billing_cycle: cycle,
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + periodDays * 86400000).toISOString(),
@@ -196,6 +251,10 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
         plans,
         currentSubscription,
         payments,
+        isTrial,
+        trialDaysRemaining,
+        isTrialExpired,
+        isSubscriptionActive,
         isUpgradeModalOpen,
         requiredTierForModal,
         openUpgradeModal,
@@ -206,7 +265,9 @@ export const PlanProvider: React.FC<{ children: React.ReactNode; currentRestaura
         upgradeSubscription,
         scheduleDowngrade,
         cancelSubscription,
-        refreshSubscription
+        refreshSubscription,
+        simulateExpireTrial,
+        resetTrial
       }}
     >
       {children}

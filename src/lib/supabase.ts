@@ -864,22 +864,46 @@ export const saveStoredSettings = (settings: RestaurantTemplateSettings) => {
 export const getStoredSubscription = (restaurantId: string): Subscription => {
   const data = localStorage.getItem(STORAGE_KEYS.SUBSCRIPTIONS);
   const all: Record<string, Subscription> = data ? JSON.parse(data) : { [DEMO_SUBSCRIPTION.restaurant_id]: DEMO_SUBSCRIPTION };
+  
   if (all[restaurantId]) {
     const plans = getStoredPlans();
-    const plan = plans.find(p => p.id === all[restaurantId].plan_id) || DEFAULT_PLANS[0];
-    return { ...all[restaurantId], plan };
+    const existing = all[restaurantId];
+    const plan = plans.find(p => p.id === existing.plan_id) || DEFAULT_PLANS[0];
+    
+    // Check if trial has expired
+    if (existing.is_trial || existing.status === 'trialing') {
+      const trialEndTime = existing.trial_ends_at 
+        ? new Date(existing.trial_ends_at).getTime() 
+        : new Date(existing.current_period_end).getTime();
+
+      if (trialEndTime <= Date.now()) {
+        existing.status = 'expired';
+        saveStoredSubscription(existing);
+      }
+    }
+
+    return { ...existing, plan };
   }
-  return {
+
+  // 7-Day Free Trial for any new restaurant
+  const now = new Date();
+  const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const newTrialSub: Subscription = {
     id: `sub-${restaurantId}`,
     restaurant_id: restaurantId,
     plan_id: 'plan-basic',
-    status: 'active',
+    status: 'trialing',
     billing_cycle: 'monthly',
-    current_period_start: new Date().toISOString(),
-    current_period_end: new Date(Date.now() + 365 * 86400000).toISOString(),
-    auto_renew: true,
+    current_period_start: now.toISOString(),
+    current_period_end: trialEnd.toISOString(),
+    auto_renew: false,
+    is_trial: true,
+    trial_ends_at: trialEnd.toISOString(),
     plan: DEFAULT_PLANS[0]
   };
+
+  saveStoredSubscription(newTrialSub);
+  return newTrialSub;
 };
 
 export const saveStoredSubscription = (sub: Subscription) => {

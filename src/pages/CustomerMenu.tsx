@@ -107,6 +107,17 @@ export const CustomerMenu: React.FC = () => {
       return;
     }
 
+    // Check if 7-day trial has concluded without paid subscription
+    const sub = getStoredSubscription(found.id);
+    const isTrialExpired = sub.status === 'expired' || 
+      ((sub.is_trial || sub.status === 'trialing') && new Date(sub.trial_ends_at || sub.current_period_end).getTime() <= Date.now());
+
+    if (isTrialExpired && !isPreview) {
+      setError(`This restaurant's digital menu is temporarily unavailable. The 7-day free trial has concluded and subscription renewal is pending.`);
+      setIsLoading(false);
+      return;
+    }
+
     const loadedCats = getStoredCategories(found.id);
     const loadedItems = getStoredItems(found.id);
     const loadedSettings = getStoredSettings(found.id);
@@ -119,8 +130,7 @@ export const CustomerMenu: React.FC = () => {
     const tpl = ALL_TEMPLATES.find(t => t.id === loadedSettings.template_id);
     setTemplateCode(tpl ? tpl.code : 'classic_menu');
 
-    // Check SaaS subscription
-    const sub = getStoredSubscription(found.id);
+    // Check SaaS subscription branding and tier
     setShowSaasBranding(!sub.plan?.remove_saas_branding);
     setIsPremiumPlus(sub.plan?.code === 'premium_plus');
 

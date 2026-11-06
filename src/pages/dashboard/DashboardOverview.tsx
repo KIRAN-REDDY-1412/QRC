@@ -16,12 +16,19 @@ import {
   Palette, 
   Crown,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  AlertCircle
 } from 'lucide-react';
 
 export const DashboardOverview: React.FC = () => {
   const { currentRestaurant, categories, items } = useRestaurant();
-  const { currentSubscription, openUpgradeModal } = usePlan();
+  const { 
+    currentSubscription, 
+    openUpgradeModal, 
+    isTrial, 
+    trialDaysRemaining, 
+    isTrialExpired 
+  } = usePlan();
   const navigate = useNavigate();
 
   if (!currentRestaurant) {
@@ -80,12 +87,16 @@ export const DashboardOverview: React.FC = () => {
       change: unavailableItems > 0 ? `${unavailableItems} items sold out` : '100% available'
     },
     {
-      title: 'Current Plan',
-      value: plan?.name || 'Free Plan',
-      icon: isPremiumPlus ? Crown : CreditCard,
-      color: isPremiumPlus ? 'text-amber-300' : 'text-emerald-400',
-      bg: isPremiumPlus ? 'bg-amber-500/15 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/20',
-      change: `Renews: ${expiryDate}`
+      title: isTrialExpired ? 'Trial Status' : isTrial ? '7-Day Free Trial' : 'Current Plan',
+      value: isTrialExpired 
+        ? 'Trial Ended' 
+        : isTrial 
+        ? `${trialDaysRemaining} Days Left` 
+        : (plan?.name || 'Basic Plan'),
+      icon: isTrialExpired ? AlertCircle : (isTrial || isPremiumPlus ? Crown : CreditCard),
+      color: isTrialExpired ? 'text-red-400' : isTrial ? 'text-amber-300' : (isPremiumPlus ? 'text-amber-300' : 'text-emerald-400'),
+      bg: isTrialExpired ? 'bg-red-500/15 border-red-500/30' : isTrial ? 'bg-amber-500/15 border-amber-500/30' : (isPremiumPlus ? 'bg-amber-500/15 border-amber-500/30' : 'bg-emerald-500/10 border-emerald-500/20'),
+      change: isTrialExpired ? 'Upgrade to Reactivate' : isTrial ? `Trial Ends: ${expiryDate}` : `Renews: ${expiryDate}`
     }
   ];
 

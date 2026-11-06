@@ -21,18 +21,25 @@ import {
   ExternalLink,
   Crown,
   Grid,
-  ShieldAlert
+  ShieldAlert,
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
 export const DashboardLayout: React.FC = () => {
   const { user, role, logout, switchRole } = useAuth();
   const { currentRestaurant, restaurants, setCurrentRestaurant } = useRestaurant();
-  const { currentSubscription, openUpgradeModal } = usePlan();
+  const { 
+    currentSubscription, 
+    openUpgradeModal, 
+    isTrial, 
+    trialDaysRemaining, 
+    isTrialExpired 
+  } = usePlan();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
-  const isFreePlan = currentSubscription?.plan?.code === 'free';
-  const isPremiumPlus = currentSubscription?.plan?.code === 'premium_plus';
+  const isPremiumPlan = currentSubscription?.plan?.code === 'premium' || currentSubscription?.plan?.code === 'premium_plus';
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -129,18 +136,26 @@ export const DashboardLayout: React.FC = () => {
 
               <div className="mt-2 flex items-center justify-between text-[11px] pt-1">
                 <span className={`font-bold px-2 py-0.5 rounded text-[10px] uppercase ${
-                  isPremiumPlus
+                  isTrialExpired
+                    ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                    : isTrial
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    : isFreePlan
-                    ? 'bg-slate-800 text-slate-400'
+                    : isPremiumPlan
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 }`}>
-                  {currentSubscription?.plan?.name || 'Free Plan'}
+                  {isTrialExpired 
+                    ? 'Trial Ended' 
+                    : isTrial 
+                    ? `7-Day Trial (${trialDaysRemaining}d)` 
+                    : currentSubscription?.plan?.name || 'Basic Plan'}
                 </span>
-                {isFreePlan && (
+                
+                {/* Upgrade Button */}
+                {(isTrialExpired || isTrial || !isPremiumPlan) && (
                   <button
-                    onClick={() => openUpgradeModal('premium')}
-                    className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+                    onClick={() => openUpgradeModal(isTrialExpired ? 'basic' : 'premium')}
+                    className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 text-[11px]"
                   >
                     <Crown className="w-3 h-3" /> Upgrade
                   </button>
@@ -233,6 +248,68 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 bg-slate-900 p-4 md:p-8 overflow-y-auto">
+        {/* Trial Expired Top Notice */}
+        {isTrialExpired && (
+          <div className="mb-6 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-red-950/90 via-red-900/80 to-slate-950 border border-red-500/50 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 border border-red-500/40 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-sm md:text-base text-white">Your 7-Day Free Trial Has Ended!</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-red-500 text-white tracking-wider">
+                    Expired
+                  </span>
+                </div>
+                <p className="text-xs text-red-200/90 mt-0.5 max-w-2xl">
+                  Your public QR menu and diner ordering features are currently paused. Subscribe to the Basic Plan (₹399/mo) or Premium Plan (₹999/mo) to reactivate your restaurant immediately.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => openUpgradeModal('basic')}
+              className="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider transition shadow-xl shadow-amber-500/20 flex items-center justify-center gap-1.5 whitespace-nowrap self-start sm:self-center"
+            >
+              <Crown className="w-4 h-4" />
+              <span>Subscribe & Upgrade</span>
+            </button>
+          </div>
+        )}
+
+        {/* Active 7-Day Free Trial Top Banner */}
+        {isTrial && !isTrialExpired && (
+          <div className="mb-6 p-3.5 md:p-4 rounded-2xl bg-gradient-to-r from-amber-950/50 via-slate-950 to-slate-900 border border-amber-500/30 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-xs md:text-sm text-white">
+                    7-Day Free Trial Active
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {trialDaysRemaining} Day{trialDaysRemaining === 1 ? '' : 's'} Left
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  You have full trial access. Subscribe anytime to keep your digital menu live and avoid interruptions when the trial ends.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => openUpgradeModal('premium')}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1.5 whitespace-nowrap shadow-md shadow-amber-500/20 self-start sm:self-center"
+            >
+              <Crown className="w-3.5 h-3.5" />
+              <span>Upgrade Plan</span>
+            </button>
+          </div>
+        )}
+
         <Outlet />
       </main>
     </div>

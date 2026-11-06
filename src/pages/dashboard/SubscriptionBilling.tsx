@@ -22,7 +22,12 @@ export const SubscriptionBilling: React.FC = () => {
     payments, 
     openUpgradeModal, 
     scheduleDowngrade, 
-    cancelSubscription 
+    cancelSubscription,
+    isTrial,
+    trialDaysRemaining,
+    isTrialExpired,
+    simulateExpireTrial,
+    resetTrial
   } = usePlan();
 
   const { currentRestaurant } = useRestaurant();
@@ -110,16 +115,32 @@ export const SubscriptionBilling: React.FC = () => {
 
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">{activePlan.name}</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {isTrialExpired ? '7-Day Free Trial (Expired)' : isTrial ? '7-Day Free Trial' : activePlan.name}
+                </h2>
                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                  currentSubscription?.status === 'active' 
+                  isTrialExpired
+                    ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                    : isTrial
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : currentSubscription?.status === 'active' 
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
                     : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                 }`}>
-                  {currentSubscription?.status === 'downgrade_scheduled' ? 'Downgrade Scheduled' : 'Active'}
+                  {isTrialExpired 
+                    ? 'Trial Expired' 
+                    : isTrial 
+                    ? `Trial: ${trialDaysRemaining}d Left`
+                    : currentSubscription?.status === 'downgrade_scheduled' ? 'Downgrade Scheduled' : 'Active'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">{activePlan.description}</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {isTrialExpired 
+                  ? 'Your 7-day free trial has expired. Subscribe to reactivate your restaurant.' 
+                  : isTrial 
+                  ? 'Full access enabled during your trial period. Upgrade anytime.' 
+                  : activePlan.description}
+              </p>
             </div>
           </div>
 
@@ -156,6 +177,48 @@ export const SubscriptionBilling: React.FC = () => {
             <span className="text-sm font-bold text-white">
               {currentSubscription?.auto_renew ? 'Enabled (UPI / Cards)' : 'Turned Off'}
             </span>
+          </div>
+        </div>
+
+        {/* Trial Expired Alert */}
+        {isTrialExpired && (
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-red-950 via-red-900/60 to-slate-950 border border-red-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-white text-sm">Your 7-Day Free Trial Has Ended</p>
+                <p className="mt-1 text-red-200/80">
+                  Your restaurant menu is temporarily locked for diners. Subscribe to either the Basic Plan (₹399/mo) or Premium Plan (₹999/mo) to reactivate your digital menu immediately.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => openUpgradeModal('basic')}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black uppercase tracking-wider text-xs whitespace-nowrap shadow-lg shadow-amber-500/20"
+            >
+              Upgrade & Subscribe
+            </button>
+          </div>
+        )}
+
+        {/* Developer & Owner Trial Testing Sandbox Toolbar */}
+        <div className="p-3 bg-slate-900/60 rounded-xl border border-dashed border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+          <span>🛠️ Trial Simulator (Testing Controls):</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={simulateExpireTrial}
+              className="px-2.5 py-1 rounded bg-red-950/80 hover:bg-red-900 text-red-300 border border-red-800 font-bold text-[10px] transition"
+              title="Instantly sets trial to expired to test the paywall"
+            >
+              Simulate Expired Trial
+            </button>
+            <button
+              onClick={resetTrial}
+              className="px-2.5 py-1 rounded bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 font-bold text-[10px] transition"
+              title="Resets back to a fresh 7-day trial"
+            >
+              Reset to 7-Day Trial
+            </button>
           </div>
         </div>
 

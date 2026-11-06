@@ -143,13 +143,15 @@ export interface Subscription {
   id: string;
   restaurant_id: string;
   plan_id: string;
-  status: 'active' | 'past_due' | 'canceled' | 'expired' | 'downgrade_scheduled';
+  status: 'active' | 'past_due' | 'canceled' | 'expired' | 'downgrade_scheduled' | 'trialing';
   billing_cycle: 'monthly' | 'yearly';
   current_period_start: string;
   current_period_end: string;
   auto_renew: boolean;
   scheduled_downgrade_plan_id?: string;
   plan?: SubscriptionPlan;
+  is_trial?: boolean;
+  trial_ends_at?: string;
 }
 
 export interface PaymentRecord {
