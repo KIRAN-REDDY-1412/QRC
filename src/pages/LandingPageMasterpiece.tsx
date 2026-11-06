@@ -31,7 +31,7 @@ import {
   Crown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { ALL_TEMPLATES } from '@/lib/supabase';
+import { ALL_TEMPLATES, DEFAULT_PLANS } from '@/lib/supabase';
 import { useRestaurant } from '@/context/RestaurantContext';
 
 export const LandingPageMasterpiece: React.FC = () => {
@@ -238,8 +238,8 @@ export const LandingPageMasterpiece: React.FC = () => {
     navigate('/dashboard');
   };
 
-  const basicPlan = plans.find(p => p.code === 'basic') || plans[0];
-  const premiumPlan = plans.find(p => p.code === 'premium') || plans[1];
+  const basicPlan = plans.find(p => p.code === 'basic') || DEFAULT_PLANS[0];
+  const premiumPlan = plans.find(p => p.code === 'premium') || DEFAULT_PLANS[1];
 
   const filteredTemplates = ALL_TEMPLATES.filter(t =>
     selectedTier === 'all' ? true : t.tier === selectedTier

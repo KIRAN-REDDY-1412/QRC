@@ -21,7 +21,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { ALL_TEMPLATES } from '@/lib/supabase';
+import { ALL_TEMPLATES, DEFAULT_PLANS } from '@/lib/supabase';
 import { useRestaurant } from '@/context/RestaurantContext';
 import { LandingPageMasterpiece } from './LandingPageMasterpiece';
 import { ConceptSensoryLuxury } from './landing/ConceptSensoryLuxury';
@@ -46,8 +46,8 @@ export const LandingPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const basicPlan = plans.find(p => p.code === 'basic') || plans[0];
-  const premiumPlan = plans.find(p => p.code === 'premium') || plans[1];
+  const basicPlan = plans.find(p => p.code === 'basic') || DEFAULT_PLANS[0];
+  const premiumPlan = plans.find(p => p.code === 'premium') || DEFAULT_PLANS[1];
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

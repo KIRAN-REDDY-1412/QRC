@@ -303,7 +303,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
   const [templateSettings, setTemplateSettings] = useState<RestaurantTemplateSettings>(() => {
-    const restId = currentRestaurant?.id || (visibleRestaurants[0]?.id || DEMO_RESTAURANTS[0].id);
+    const restId = currentRestaurant?.id || visibleRestaurants[0]?.id || '';
     return getStoredSettings(restId);
   });
   const [templates] = useState<MenuTemplate[]>(ALL_TEMPLATES);

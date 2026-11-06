@@ -32,7 +32,7 @@ import { TemplateAccessManager } from './pages/admin/TemplateAccessManager';
 // Inner wrapper to supply currentRestaurantId to PlanProvider
 const AppRoutes: React.FC = () => {
   const { currentRestaurant } = useRestaurant();
-  const currentRestaurantId = currentRestaurant?.id || 'rest-saffron-darbar';
+  const currentRestaurantId = currentRestaurant?.id || '';
 
   return (
     <PlanProvider currentRestaurantId={currentRestaurantId}>
