@@ -32,6 +32,7 @@ export const DashboardLayout: React.FC = () => {
   const { 
     currentSubscription, 
     openUpgradeModal, 
+    isUpgradeModalOpen,
     isTrial, 
     trialDaysRemaining, 
     isTrialExpired 
@@ -91,9 +92,9 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-950 border-r border-slate-800/80 p-4 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 md:static ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-slate-950 border-r border-slate-800/80 p-4 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 md:static ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${isUpgradeModalOpen ? 'hidden md:hidden' : ''}`}
       >
         <div>
           {/* Logo & Platform Brand */}

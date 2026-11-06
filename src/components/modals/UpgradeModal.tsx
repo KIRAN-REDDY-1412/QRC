@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { usePlan } from '@/context/PlanContext';
 import { useRestaurant } from '@/context/RestaurantContext';
 import { useAuth } from '@/context/AuthContext';
@@ -39,6 +40,17 @@ export const UpgradeModal: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Prevent background scrolling when upgrade modal is open
+  useEffect(() => {
+    if (isUpgradeModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isUpgradeModalOpen]);
 
   if (!isUpgradeModalOpen) return null;
 
@@ -87,12 +99,12 @@ export const UpgradeModal: React.FC = () => {
     }
   };
 
-  return (
+  return createPortal(
     <div 
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in"
+      className="fixed inset-0 z-[99999] w-screen h-screen bg-slate-950/95 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in"
     >
       <div className="relative bg-slate-900 border border-slate-700 rounded-3xl max-w-4xl w-full p-5 sm:p-8 text-white shadow-2xl overflow-hidden my-auto">
         {/* Glow behind modal */}
@@ -299,6 +311,7 @@ export const UpgradeModal: React.FC = () => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
