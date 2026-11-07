@@ -15,6 +15,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SUPER_ADMIN_EMAILS = ['kiran@gmail.com'];
+
+export const isSuperAdminEmail = (email?: string | null): boolean => {
+  if (!email) return false;
+  return SUPER_ADMIN_EMAILS.includes(email.trim().toLowerCase());
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
@@ -46,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .maybeSingle();
 
         if (data) {
-          const userRole = (data.role as UserRole) || 'restaurant_owner';
+          const userRole = isSuperAdminEmail(cleanEmail) || data.role === 'super_admin' ? 'super_admin' : 'restaurant_owner';
           const logged: UserProfile = {
             id: data.id,
             email: data.email,
@@ -106,11 +113,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // 2. Create new profile with a valid RFC4122 UUID and owner role
       const newUserId = generateId();
+      const initialRole: UserRole = isSuperAdminEmail(cleanEmail) ? 'super_admin' : 'restaurant_owner';
       const newUser: UserProfile = {
         id: newUserId,
         email: cleanEmail,
         full_name: cleanName,
-        role: 'restaurant_owner'
+        role: initialRole
       };
 
       if (isLiveSupabase) {
@@ -118,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: newUser.id,
           email: newUser.email,
           full_name: newUser.full_name,
-          role: 'restaurant_owner'
+          role: initialRole
         });
         if (error) {
           console.warn('Supabase profile upsert warning:', error.message);
