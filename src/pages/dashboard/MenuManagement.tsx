@@ -88,8 +88,8 @@ export const MenuManagement: React.FC = () => {
     // If no category exists yet, auto-create a default category so owner is never blocked
     let targetCatId = categories[0]?.id;
     if (!targetCatId) {
-      const newCat = addCategory("Chef's Specials", 'Freshly prepared specialty dishes');
-      targetCatId = categories[0]?.id || `cat-${Date.now()}`;
+      const newCat = addCategory("Main Courses", 'House culinary specialties');
+      targetCatId = newCat?.id;
     }
 
     setEditingItem(null);
@@ -135,7 +135,7 @@ export const MenuManagement: React.FC = () => {
         targetCatId = categories[0].id;
       } else {
         const created = addCategory("Main Courses", "House culinary specialties");
-        targetCatId = categories[0]?.id || `cat-${Date.now()}`;
+        targetCatId = created?.id;
       }
     }
 

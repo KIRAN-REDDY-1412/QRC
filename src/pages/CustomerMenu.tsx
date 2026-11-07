@@ -92,18 +92,26 @@ export const CustomerMenu: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    const allRestaurants = getStoredRestaurants();
-    let found = allRestaurants.find(r => r.slug.toLowerCase() === restaurantSlug?.toLowerCase());
+    let found: Restaurant | null = null;
 
-    if (!found && isLiveSupabase && restaurantSlug) {
+    if (isLiveSupabase && restaurantSlug) {
       try {
-        const { data } = await supabase.from('restaurants').select('*').eq('slug', restaurantSlug.toLowerCase()).maybeSingle();
+        const { data } = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('slug', restaurantSlug.toLowerCase())
+          .maybeSingle();
         if (data) {
           found = data as Restaurant;
         }
       } catch (err) {
         console.warn('Supabase restaurant lookup notice:', err);
       }
+    }
+
+    if (!found) {
+      const allRestaurants = getStoredRestaurants();
+      found = allRestaurants.find(r => r.slug.toLowerCase() === restaurantSlug?.toLowerCase()) || null;
     }
 
     if (!found) {
@@ -134,16 +142,18 @@ export const CustomerMenu: React.FC = () => {
 
     let loadedCats = getStoredCategories(found.id);
     let loadedItems = getStoredItems(found.id);
-    const loadedSettings = getStoredSettings(found.id);
+    let loadedSettings = getStoredSettings(found.id);
 
     if (isLiveSupabase) {
       try {
-        const [catsRes, itemsRes] = await Promise.all([
+        const [catsRes, itemsRes, settingsRes] = await Promise.all([
           supabase.from('menu_categories').select('*').eq('restaurant_id', found.id).order('order_index'),
-          supabase.from('menu_items').select('*').eq('restaurant_id', found.id).order('order_index')
+          supabase.from('menu_items').select('*').eq('restaurant_id', found.id).order('order_index'),
+          supabase.from('restaurant_template_settings').select('*').eq('restaurant_id', found.id).maybeSingle()
         ]);
-        if (catsRes.data && catsRes.data.length > 0) loadedCats = catsRes.data as MenuCategory[];
-        if (itemsRes.data && itemsRes.data.length > 0) loadedItems = itemsRes.data as MenuItem[];
+        if (!catsRes.error && catsRes.data) loadedCats = catsRes.data as MenuCategory[];
+        if (!itemsRes.error && itemsRes.data) loadedItems = itemsRes.data as MenuItem[];
+        if (!settingsRes.error && settingsRes.data) loadedSettings = settingsRes.data as RestaurantTemplateSettings;
       } catch (err) {
         console.warn('Supabase menu items lookup notice:', err);
       }

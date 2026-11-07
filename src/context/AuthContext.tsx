@@ -18,8 +18,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem('smartqr_current_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('smartqr_current_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -33,14 +37,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, preferredRole: UserRole = 'restaurant_owner') => {
     setIsLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
     try {
       if (isLiveSupabase) {
-        const { data } = await supabase.from('profiles').select('*').eq('email', email.toLowerCase()).maybeSingle();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
         if (data) {
           const logged: UserProfile = {
             id: data.id,
             email: data.email,
-            full_name: data.full_name || email.split('@')[0],
+            full_name: data.full_name || cleanEmail.split('@')[0],
             role: (data.role as UserRole) || preferredRole,
             avatar_url: data.avatar_url,
             phone: data.phone
@@ -50,13 +60,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      const loggedUser: UserProfile = {
+      // If profile does not exist yet in Supabase or offline, register it now
+      await register(cleanEmail, cleanEmail.split('@')[0], preferredRole);
+    } catch (err) {
+      console.error('Auth login error:', err);
+      // Fallback local session
+      const fallbackUser: UserProfile = {
         id: generateId(),
-        email,
-        full_name: email.split('@')[0],
+        email: cleanEmail,
+        full_name: cleanEmail.split('@')[0],
         role: preferredRole
       };
-      setUser(loggedUser);
+      setUser(fallbackUser);
     } finally {
       setIsLoading(false);
     }
@@ -64,27 +79,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (email: string, fullName: string, role: UserRole = 'restaurant_owner'): Promise<UserProfile> => {
     setIsLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim() || cleanEmail.split('@')[0];
+
     try {
+      // 1. Check if profile already exists in Supabase
+      if (isLiveSupabase) {
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', cleanEmail)
+          .maybeSingle();
+
+        if (existing) {
+          const existingUser: UserProfile = {
+            id: existing.id,
+            email: existing.email,
+            full_name: existing.full_name || cleanName,
+            role: (existing.role as UserRole) || role,
+            avatar_url: existing.avatar_url,
+            phone: existing.phone
+          };
+          setUser(existingUser);
+          return existingUser;
+        }
+      }
+
+      // 2. Create new profile with a valid RFC4122 UUID
+      const newUserId = generateId();
       const newUser: UserProfile = {
-        id: generateId(),
-        email: email.trim(),
-        full_name: fullName.trim(),
+        id: newUserId,
+        email: cleanEmail,
+        full_name: cleanName,
         role
       };
-      setUser(newUser);
-      localStorage.setItem('smartqr_current_user', JSON.stringify(newUser));
 
       if (isLiveSupabase) {
-        supabase.from('profiles').upsert({
+        const { error } = await supabase.from('profiles').upsert({
           id: newUser.id,
           email: newUser.email,
           full_name: newUser.full_name,
           role: newUser.role
-        }).then(({ error }) => {
-          if (error) console.warn('Supabase profile upsert error:', error.message);
         });
+        if (error) {
+          console.warn('Supabase profile upsert warning (please run supabase_master_setup.sql in Supabase):', error.message);
+        }
       }
 
+      setUser(newUser);
       return newUser;
     } finally {
       setIsLoading(false);
@@ -93,7 +135,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     if (isLiveSupabase) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Ignore
+      }
     }
     setUser(null);
   };
@@ -102,9 +148,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       if (isLiveSupabase) {
-        const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) {
-          console.warn('Supabase password update error:', error.message);
+        try {
+          await supabase.auth.updateUser({ password: newPassword });
+        } catch (err) {
+          console.warn('Supabase password update error:', err);
         }
       }
       if (user?.email) {
