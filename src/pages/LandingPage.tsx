@@ -32,7 +32,7 @@ import { ConceptKitchenPulse } from './landing/ConceptKitchenPulse';
 
 export const LandingPage: React.FC = () => {
   const { plans } = usePlan();
-  const { login, register, isAuthenticated } = useAuth();
+  const { user, login, register, isAuthenticated } = useAuth();
   const { addRestaurant } = useRestaurant();
   const navigate = useNavigate();
 
@@ -53,6 +53,7 @@ export const LandingPage: React.FC = () => {
     e.preventDefault();
     if (!email) return;
 
+    const isSuper = email.trim().toLowerCase() === 'kiran@gmail.com';
     if (authMode === 'register') {
       const registeredUser = await register(email, name || 'Restaurant Owner');
       const restName = name.trim() || 'My Restaurant';
@@ -87,7 +88,11 @@ export const LandingPage: React.FC = () => {
     }
     setPassword('');
     setIsAuthModalOpen(false);
-    navigate('/dashboard');
+    if (isSuper) {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   const conceptSwitcher = showSwitcher ? (
@@ -238,10 +243,14 @@ export const LandingPage: React.FC = () => {
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <button
-                onClick={() => navigate('/dashboard')}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/20 flex items-center gap-1.5"
+                onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/dashboard')}
+                className={`px-5 py-2.5 rounded-xl ${
+                  user?.role === 'super_admin' 
+                    ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-amber-500/20' 
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-emerald-600/20'
+                } text-xs transition shadow-lg flex items-center gap-1.5`}
               >
-                <span>Owner Dashboard</span>
+                <span>{user?.role === 'super_admin' ? 'Super Admin Portal' : 'Owner Dashboard'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             ) : (

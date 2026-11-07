@@ -36,7 +36,7 @@ import { useRestaurant } from '@/context/RestaurantContext';
 
 export const LandingPageMasterpiece: React.FC = () => {
   const { plans } = usePlan();
-  const { login, register, isAuthenticated } = useAuth();
+  const { user, login, register, isAuthenticated } = useAuth();
   const { addRestaurant } = useRestaurant();
   const navigate = useNavigate();
 
@@ -202,6 +202,7 @@ export const LandingPageMasterpiece: React.FC = () => {
     e.preventDefault();
     if (!email) return;
 
+    const isSuper = email.trim().toLowerCase() === 'kiran@gmail.com';
     if (authMode === 'register') {
       const registeredUser = await register(email, name || 'Restaurant Owner');
       const restName = name.trim() || 'My Restaurant';
@@ -235,7 +236,11 @@ export const LandingPageMasterpiece: React.FC = () => {
       await login(email);
     }
     setIsAuthModalOpen(false);
-    navigate('/dashboard');
+    if (isSuper) {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   const basicPlan = plans.find(p => p.code === 'basic') || DEFAULT_PLANS[0];
@@ -326,10 +331,14 @@ export const LandingPageMasterpiece: React.FC = () => {
 
             {isAuthenticated ? (
               <button
-                onClick={() => navigate('/dashboard')}
-                className="px-5 py-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-amber-500/20 flex items-center gap-1.5"
+                onClick={() => navigate(user?.role === 'super_admin' ? '/admin' : '/dashboard')}
+                className={`px-5 py-2 rounded-full ${
+                  user?.role === 'super_admin'
+                    ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold'
+                } text-xs uppercase tracking-wider transition shadow-lg flex items-center gap-1.5`}
               >
-                <span>Owner Dashboard</span>
+                <span>{user?.role === 'super_admin' ? 'Super Admin Portal' : 'Owner Dashboard'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             ) : (

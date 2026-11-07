@@ -24,7 +24,8 @@ import {
   ShieldAlert,
   Sparkles,
   AlertTriangle,
-  ShieldCheck
+  ShieldCheck,
+  ArrowRight
 } from 'lucide-react';
 
 export const DashboardLayout: React.FC = () => {
@@ -233,6 +234,30 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 bg-slate-900 p-4 md:p-8 overflow-y-auto">
+        {/* Super Admin Notice if viewing Restaurant Dashboard */}
+        {role === 'super_admin' && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-950 to-slate-900 border border-amber-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="text-sm font-extrabold text-white">Super Admin Access Active</p>
+                <p className="text-xs text-amber-200/80">
+                  You are viewing the single restaurant management view. Your main command center is the Super Admin Portal.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/admin')}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Go to Super Admin Command Center</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         {/* Trial Expired Top Notice */}
         {isTrialExpired && (
           <div className="mb-6 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-red-950/90 via-red-900/80 to-slate-950 border border-red-500/50 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
