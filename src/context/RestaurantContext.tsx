@@ -105,38 +105,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (!isSuperAdmin) {
         query = query.or(`owner_id.eq.${user.id},email.eq.${user.email.toLowerCase()}`);
       }
-      let { data, error } = await query;
-
-      // Auto-migrate any local restaurants created before the database fix
-      const localStored = getStoredRestaurants();
-      if (localStored.length > 0) {
-        let hasNewSync = false;
-        for (const localRest of localStored) {
-          const alreadyInDb = data && data.some(r => r.id === localRest.id || r.slug.toLowerCase() === localRest.slug.toLowerCase());
-          if (!alreadyInDb && localRest.name) {
-            const { error: insErr } = await supabase.from('restaurants').upsert({
-              ...localRest,
-              owner_id: localRest.owner_id || user.id,
-              email: localRest.email || user.email
-            });
-            if (!insErr) {
-              hasNewSync = true;
-              const localCats = getStoredCategories(localRest.id);
-              if (localCats.length > 0) {
-                await supabase.from('menu_categories').upsert(localCats);
-              }
-              const localItems = getStoredItems(localRest.id);
-              if (localItems.length > 0) {
-                await supabase.from('menu_items').upsert(localItems);
-              }
-            }
-          }
-        }
-        if (hasNewSync) {
-          const { data: refreshed } = await query;
-          if (refreshed) data = refreshed;
-        }
-      }
+      const { data, error } = await query;
 
       if (!error && data) {
         setAllRestaurants(data as Restaurant[]);
@@ -146,6 +115,8 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (prev && data.some(r => r.id === prev.id)) return prev;
             return data[0] as Restaurant;
           });
+        } else {
+          setCurrentRestaurantState(null);
         }
       }
     } catch (err) {

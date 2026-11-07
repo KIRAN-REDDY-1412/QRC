@@ -7,10 +7,9 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, role?: UserRole) => Promise<void>;
-  register: (email: string, fullName: string, role?: UserRole) => Promise<UserProfile>;
+  login: (email: string) => Promise<void>;
+  register: (email: string, fullName: string) => Promise<UserProfile>;
   logout: () => Promise<void>;
-  switchRole: (newRole: UserRole) => void;
   changePassword: (newPassword: string) => Promise<boolean>;
 }
 
@@ -35,23 +34,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const login = async (email: string, preferredRole: UserRole = 'restaurant_owner') => {
+  const login = async (email: string) => {
     setIsLoading(true);
     const cleanEmail = email.trim().toLowerCase();
     try {
       if (isLiveSupabase) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('profiles')
           .select('*')
           .eq('email', cleanEmail)
           .maybeSingle();
 
         if (data) {
+          const userRole = (data.role as UserRole) || 'restaurant_owner';
           const logged: UserProfile = {
             id: data.id,
             email: data.email,
             full_name: data.full_name || cleanEmail.split('@')[0],
-            role: (data.role as UserRole) || preferredRole,
+            role: userRole,
             avatar_url: data.avatar_url,
             phone: data.phone
           };
@@ -60,16 +60,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      // If profile does not exist yet in Supabase or offline, register it now
-      await register(cleanEmail, cleanEmail.split('@')[0], preferredRole);
+      // If profile does not exist yet in Supabase or offline, register as restaurant_owner
+      await register(cleanEmail, cleanEmail.split('@')[0]);
     } catch (err) {
       console.error('Auth login error:', err);
-      // Fallback local session
       const fallbackUser: UserProfile = {
         id: generateId(),
         email: cleanEmail,
         full_name: cleanEmail.split('@')[0],
-        role: preferredRole
+        role: 'restaurant_owner'
       };
       setUser(fallbackUser);
     } finally {
@@ -77,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, fullName: string, role: UserRole = 'restaurant_owner'): Promise<UserProfile> => {
+  const register = async (email: string, fullName: string): Promise<UserProfile> => {
     setIsLoading(true);
     const cleanEmail = email.trim().toLowerCase();
     const cleanName = fullName.trim() || cleanEmail.split('@')[0];
@@ -96,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: existing.id,
             email: existing.email,
             full_name: existing.full_name || cleanName,
-            role: (existing.role as UserRole) || role,
+            role: (existing.role as UserRole) || 'restaurant_owner',
             avatar_url: existing.avatar_url,
             phone: existing.phone
           };
@@ -105,13 +104,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Create new profile with a valid RFC4122 UUID
+      // 2. Create new profile with a valid RFC4122 UUID and owner role
       const newUserId = generateId();
       const newUser: UserProfile = {
         id: newUserId,
         email: cleanEmail,
         full_name: cleanName,
-        role
+        role: 'restaurant_owner'
       };
 
       if (isLiveSupabase) {
@@ -119,10 +118,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: newUser.id,
           email: newUser.email,
           full_name: newUser.full_name,
-          role: newUser.role
+          role: 'restaurant_owner'
         });
         if (error) {
-          console.warn('Supabase profile upsert warning (please run supabase_master_setup.sql in Supabase):', error.message);
+          console.warn('Supabase profile upsert warning:', error.message);
         }
       }
 
@@ -163,12 +162,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const switchRole = (newRole: UserRole) => {
-    if (user) {
-      setUser({ ...user, role: newRole });
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -179,7 +172,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         register,
         logout,
-        switchRole,
         changePassword
       }}
     >

@@ -357,20 +357,24 @@ const STORAGE_KEYS = {
   BOOKINGS: 'smartqr_table_bookings'
 };
 
-// One-time automatic purge: wipe legacy mock/demo data from browser localStorage
+// One-time automatic purge: wipe legacy mock/demo data and previously cached local restaurants
 if (typeof window !== 'undefined' && window.localStorage) {
   try {
-    const rawR = localStorage.getItem(STORAGE_KEYS.RESTAURANTS);
-    if (rawR && (rawR.includes('saffron-darbar') || rawR.includes('rest-saffron-darbar') || rawR.includes('bombay-roast'))) {
+    const isPurged = localStorage.getItem('smartqr_purge_v3');
+    if (!isPurged) {
       localStorage.removeItem(STORAGE_KEYS.RESTAURANTS);
       localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
       localStorage.removeItem(STORAGE_KEYS.ITEMS);
       localStorage.removeItem(STORAGE_KEYS.SETTINGS);
       localStorage.removeItem(STORAGE_KEYS.SUBSCRIPTIONS);
-    }
-    const rawU = localStorage.getItem('smartqr_current_user');
-    if (rawU && (rawU.includes('vikram@saffrondarbar.in') || rawU.includes('user-owner-1'))) {
+      localStorage.removeItem(STORAGE_KEYS.PAYMENTS);
       localStorage.removeItem('smartqr_current_user');
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('smartqr_tables_') || key.startsWith('smartqr_owner_password_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      localStorage.setItem('smartqr_purge_v3', 'true');
     }
   } catch {
     // Ignore error

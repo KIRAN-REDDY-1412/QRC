@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { 
   ShieldCheck, 
@@ -15,9 +15,14 @@ import {
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Strict Super Admin Access Gate
+  if (!user || user.role !== 'super_admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const adminNav = [
     { name: 'Platform Overview', path: '/admin', icon: BarChart2 },
@@ -97,7 +102,6 @@ export const AdminLayout: React.FC = () => {
         <div className="pt-4 border-t border-slate-800 space-y-3">
           <button
             onClick={() => {
-              switchRole('restaurant_owner');
               navigate('/dashboard');
             }}
             className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-bold transition flex items-center justify-center gap-2 border border-slate-800"

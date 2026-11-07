@@ -23,11 +23,12 @@ import {
   Grid,
   ShieldAlert,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  ShieldCheck
 } from 'lucide-react';
 
 export const DashboardLayout: React.FC = () => {
-  const { user, role, logout, switchRole } = useAuth();
+  const { user, role, logout } = useAuth();
   const { currentRestaurant, restaurants, setCurrentRestaurant } = useRestaurant();
   const { 
     currentSubscription, 
@@ -191,35 +192,18 @@ export const DashboardLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* User Profile & Demo Switcher Footer */}
+        {/* User Profile & Footer */}
         <div className="pt-4 border-t border-slate-800/80 space-y-3">
-          {/* Super Admin Shortcut if role is super_admin or quick switcher for pair programming demo */}
-          <div className="p-2 bg-slate-900/80 rounded-xl border border-slate-800">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-slate-400 font-mono">ROLE SWITCHER:</span>
-              <span className="text-[10px] text-emerald-400 font-bold uppercase">{role}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                onClick={() => {
-                  switchRole('restaurant_owner');
-                  navigate('/dashboard');
-                }}
-                className={`py-1 text-[10px] font-bold rounded ${role === 'restaurant_owner' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'}`}
-              >
-                Owner
-              </button>
-              <button
-                onClick={() => {
-                  switchRole('super_admin');
-                  navigate('/admin');
-                }}
-                className={`py-1 text-[10px] font-bold rounded ${role === 'super_admin' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-400'}`}
-              >
-                Super Admin
-              </button>
-            </div>
-          </div>
+          {/* Only show Super Admin Portal shortcut if the authenticated user is genuinely a Super Admin */}
+          {role === 'super_admin' && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="w-full py-2 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold transition flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>Super Admin Portal</span>
+            </button>
+          )}
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
